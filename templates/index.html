@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Trang Chủ | AI Loan Predictor{% endblock %}
+
+{% block content %}
+<header class="hero">
+    <div class="hero-badge">
+        <i class="fas fa-microchip"></i> Powered by XGBoost & Gemini AI
+    </div>
+    <h1>🏦 AI Loan Predictor</h1>
+    <p>Hệ thống trí tuệ nhân tạo phân tích rủi ro tín dụng và dự đoán khả năng vay vốn chính xác, nhanh chóng dành cho
+        cá nhân.</p>
+
+    <div style="display: flex; gap: 16px; justify-content: center; margin-top: 20px;">
+        <a href="/predict-loan" class="btn btn-primary"><i class="fas fa-magic"></i> Bắt Đầu Dự Đoán</a>
+        <a href="/dashboard" class="btn btn-ghost"><i class="fas fa-chart-bar"></i> Xem Thống Kê</a>
+    </div>
+</header>
+
+<div class="features-grid">
+    <div class="glass" style="text-align: center;">
+        <i class="fas fa-bolt" style="font-size: 2.5rem; color: var(--accent-cyan); margin-bottom: 20px;"></i>
+        <h3 style="margin-bottom: 12px;">Phân Tích Tức Thì</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Hệ thống sử dụng mô hình XGBoost được huấn luyện
+            trên 300,000+ hồ sơ để đưa ra quyết định trong vài giây.</p>
+    </div>
+
+    <div class="glass" style="text-align: center;">
+        <i class="fas fa-robot" style="font-size: 2.5rem; color: var(--accent-purple); margin-bottom: 20px;"></i>
+        <h3 style="margin-bottom: 12px;">Gemini AI Chatbot</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Trợ lý ảo thông minh sẵn sàng giải đáp mọi thắc mắc
+            về hồ sơ tín dụng và đưa ra lời khuyên tài chính.</p>
+    </div>
+
+    <div class="glass" style="text-align: center;">
+        <i class="fas fa-file-pdf" style="font-size: 2.5rem; color: var(--accent-emerald); margin-bottom: 20px;"></i>
+        <h3 style="margin-bottom: 12px;">Báo Cáo Tự Động</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Xuất ngay báo cáo phân tích rủi ro tín dụng dưới
+            dạng PDF chuyên nghiệp với đầy đủ thông số DTI/PTI.</p>
+    </div>
+</div>
+{% endblock %}

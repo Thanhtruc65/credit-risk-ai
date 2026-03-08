@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pandas
+numpy
+scikit-learn
+seaborn
+matplotlib
+python-multipart
+jinja2
+xgboost
+google-generativeai
+python-dotenv
+joblib
+reportlab
+pillow

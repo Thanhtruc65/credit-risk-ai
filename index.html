@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Loan Predictor — Dự Đoán Khả Năng Vay Vốn</title>
+    <meta name="description"
+        content="Hệ thống AI phân tích rủi ro tín dụng và dự đoán khả năng vay vốn dựa trên mô hình học máy XGBoost.">
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+    <!-- Chart.js & jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Design System -->
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a1a;
+            color: #f1f5f9;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(ellipse 80% 50% at 20% 40%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 20%, rgba(34, 211, 238, 0.08) 0%, transparent 50%);
+        }
+
+        .particles {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(139, 92, 246, 0.4);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-10vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .app-wrapper {
+            position: relative;
+            z-index: 1;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 32px 0 28px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: #8b5cf6;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6, #22d3ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .hero p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr 400px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .col-right {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .col-right {
+                grid-column: span 1;
+            }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .glass-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .glass-title i {
+            color: #8b5cf6;
+        }
+
+        .stat-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-value.danger {
+            color: #fb7185;
+        }
+
+        .stat-value.info {
+            color: #22d3ee;
+        }
+
+        .stat-value.muted {
+            color: #94a3b8;
+        }
+
+        .wizard-progress {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 24px;
+            padding: 0 8px;
+        }
+
+        .wizard-progress::before {
+            content: '';
+            position: absolute;
+            top: 16px;
+            left: 40px;
+            right: 40px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.08);
+            z-index: 0;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 16px;
+            left: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+            z-index: 1;
+            transition: width 0.5s;
+            border-radius: 2px;
+        }
+
+        .step-dot {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 6px;
+            z-index: 2;
+            cursor: pointer;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #111127;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active .step-circle {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border-color: #8b5cf6;
+            color: white;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .step-dot.done .step-circle {
+            background: #34d399;
+            border-color: #34d399;
+            color: white;
+        }
+
+        .step-name {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .step-dot.active .step-name {
+            color: #8b5cf6;
+        }
+
+        .step-dot.done .step-name {
+            color: #34d399;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .field-grid .full {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 600px) {
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .field-grid .full {
+                grid-column: span 1;
+            }
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+        }
+
+        .field label i {
+            color: #8b5cf6;
+            margin-right: 4px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #f1f5f9;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.06);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        .field select option {
+            background: #111127;
+            color: #f1f5f9;
+        }
+
+        .field .input-wrap {
+            position: relative;
+        }
+
+        .field .input-suffix {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 0.82rem;
+            pointer-events: none;
+        }
+
+        .field small {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        .lookup-bar {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px dashed rgba(139, 92, 246, 0.35);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .lookup-bar>label {
+            display: block;
+            font-size: 0.72rem;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .lookup-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .lookup-row input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+        .lookup-row button {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            white-space: nowrap;
+            width: auto !important;
+        }
+
+        .lookup-status {
+            font-size: 0.72rem;
+            margin-top: 8px;
+            color: #64748b;
+        }
+
+        .wizard-nav {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 11px 22px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: auto !important;
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.06);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-submit {
+            width: 100% !important;
+            padding: 14px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 14px;
+            box-shadow: 0 6px 28px rgba(139, 92, 246, 0.4);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-export {
+            width: 100% !important;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #059669, #34d399);
+            color: white;
+            font-weight: 700;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        .result-placeholder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #64748b;
+            padding: 60px 20px;
+        }
+
+        .result-placeholder i {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            opacity: 0.15;
+            color: #8b5cf6;
+        }
+
+        .result-panel {
+            display: none;
+        }
+
+        .result-panel.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-status {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .result-status .status-label {
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .result-status .status-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .result-status.approved .status-title {
+            color: #34d399;
+        }
+
+        .result-status.rejected .status-title {
+            color: #fb7185;
+        }
+
+        .result-status.pending .status-title {
+            color: #fbbf24;
+        }
+
+        .metric-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .metric-badge {
+            padding: 5px 14px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .badge-good {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .badge-warn {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .badge-bad {
+            background: rgba(251, 113, 133, 0.12);
+            color: #fb7185;
+            border-color: rgba(251, 113, 133, 0.3);
+        }
+
+        .gauge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 12px 0 16px;
+        }
+
+        .gauge-label {
+            font-size: 0.73rem;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .analysis-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            margin-bottom: 10px;
+        }
+
+        .reason-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .reason-card.risk {
+            background: rgba(251, 113, 133, 0.12);
+            border-left: 3px solid #fb7185;
+            color: #fda4af;
+        }
+
+        .reason-card.ok {
+            background: rgba(52, 211, 153, 0.12);
+            border-left: 3px solid #34d399;
+            color: #6ee7b7;
+        }
+
+        .suggest-card {
+            background: rgba(34, 211, 238, 0.12);
+            border-left: 3px solid #22d3ee;
+            color: #a5f3fc;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .fi-toggle {
+            margin-top: 16px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .fi-toggle button {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            color: #c4b5fd;
+            border-radius: 50px;
+            padding: 7px 16px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: auto !important;
+        }
+
+        .fi-panel {
+            display: none;
+            margin-top: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .fi-panel.show {
+            display: block;
+        }
+
+        .fi-panel h3 {
+            font-size: 0.78rem;
+            color: #8b5cf6;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .bar-name {
+            min-width: 120px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+            width: 0;
+            transition: width 0.8s ease;
+        }
+
+        .bar-pct {
+            min-width: 38px;
+            font-size: 0.72rem;
+            color: #8b5cf6;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        #chatBubble {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 28px rgba(139, 92, 246, 0.5);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+        }
+
+        #chatBubble:hover {
+            transform: scale(1.1);
+        }
+
+        #chatPanel {
+            position: fixed;
+            bottom: 96px;
+            right: 28px;
+            width: 380px;
+            height: 540px;
+            max-height: 80vh;
+            background: #111127;
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 18px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        #chatPanel.open {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: white;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-msg {
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+            max-width: 88%;
+        }
+
+        .chat-msg.bot {
+            background: rgba(139, 92, 246, 0.15);
+            color: #c4b5fd;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-msg.user {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f1f5f9;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-quick {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .quick-btn {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #c4b5fd;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.73rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            width: auto !important;
+        }
+
+        .chat-input-row {
+            display: flex;
+            padding: 10px 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #f1f5f9;
+            padding: 9px 14px;
+            font-size: 0.82rem;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-send {
+            background: none !important;
+            border: none;
+            color: #8b5cf6;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            width: auto !important;
+            box-shadow: none !important;
+        }
+
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 10px 14px;
+            background: rgba(139, 92, 246, 0.12);
+            border-radius: 14px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="bg-mesh"></div>
+    <div class="particles" id="particles"></div>
+
+    <div class="app-wrapper">
+        <!-- ═══ HERO ═══ -->
+        <header class="hero">
+            <div class="hero-badge">
+                <i class="fas fa-microchip"></i> Powered by XGBoost & Gemini AI
+            </div>
+            <h1>🏦 AI Loan Predictor</h1>
+            <p>Hệ thống trí tuệ nhân tạo phân tích rủi ro tín dụng<br>và dự đoán khả năng vay vốn</p>
+        </header>
+
+        <!-- ═══ MAIN 3-COLUMN GRID ═══ -->
+        <div class="main-grid">
+
+            <!-- ── COL LEFT: Dashboard ── -->
+            <div class="col-left">
+                <div class="glass" id="dashboardCard">
+                    <div class="glass-title">
+                        <i class="fas fa-chart-pie"></i> Dữ Liệu Hệ Thống
+                    </div>
+                    <div id="dbSubtitle"
+                        style="font-size: 0.72rem; color: var(--text-muted); margin-top: -12px; margin-bottom: 16px;">
+                        Tính toán từ 307K+ hồ sơ
+                    </div>
+
+                    <div style="aspect-ratio: 1; width: 100%; max-width: 200px; margin: 0 auto 20px;">
+                        <canvas id="defaultChart"></canvas>
+                    </div>
+
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Tỉ lệ nợ xấu</div>
+                            <div class="stat-value danger" id="dbDefaultRate">8.1%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Thu nhập TB</div>
+                            <div class="stat-value info" id="dbIncomeMean">-- ₫</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Ngày LV trung bình</div>
+                            <div class="stat-value muted" id="dbDaysMean">-- ngày</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── COL CENTER: Form Wizard ── -->
+            <div class="col-center">
+                <div class="glass">
+                    <div class="glass-title">
+                        <i class="fas fa-file-invoice-dollar"></i> Nhập Hồ Sơ Vay Vốn
+                    </div>
+
+                    <!-- Client Lookup -->
+                    <div class="lookup-bar">
+                        <label><i class="fas fa-search"></i> Tra cứu lịch sử tín dụng (Client ID)</label>
+                        <div class="lookup-row">
+                            <input type="number" id="lookupId" placeholder="Nhập SK_ID_CURR (VD: 100002)">
+                            <button type="button" id="lookupBtn">Kiểm tra</button>
+                        </div>
+                        <p class="lookup-status" id="lookupStatus"></p>
+                    </div>
+
+                    <!-- Wizard Progress -->
+                    <div class="wizard-progress">
+                        <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                        <div class="step-dot active" data-step="1">
+                            <div class="step-circle">1</div>
+                            <div class="step-name">Cá nhân</div>
+                        </div>
+                        <div class="step-dot" data-step="2">
+                            <div class="step-circle">2</div>
+                            <div class="step-name">Tài chính</div>
+                        </div>
+                        <div class="step-dot" data-step="3">
+                            <div class="step-circle">3</div>
+                            <div class="step-name">Tài sản</div>
+                        </div>
+                        <div class="step-dot" data-step="4">
+                            <div class="step-circle">4</div>
+                            <div class="step-name">Xác nhận</div>
+                        </div>
+                    </div>
+
+                    <form id="loanForm">
+                        <input type="hidden" id="SK_ID_CURR" value="0">
+
+                        <!-- STEP 1: Personal Info -->
+                        <div class="form-step active" data-step="1">
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label><i class="fas fa-venus-mars"></i> Giới Tính</label>
+                                    <select id="CODE_GENDER" required>
+                                        <option value="M">Nam (Male)</option>
+                                        <option value="F">Nữ (Female)</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-birthday-cake"></i> Tuổi</label>
+                                    <input type="number" id="AGE" value="30" min="18" max="100" required>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-graduation-cap"></i> Trình Độ Học Vấn</label>
+                                    <select id="NAME_EDUCATION_TYPE" required>
+                                        <option value="Higher education">Đại học (Higher education)</option>
+                                        <option value="Secondary / secondary special">Trung học (Secondary)</option>
+                                        <option value="Incomplete higher">Chưa tốt nghiệp ĐH</option>
+                                        <option value="Lower secondary">Dưới trung học</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-heart"></i> Tình Trạng Hôn Nhân</label>
+                                    <select id="NAME_FAMILY_STATUS" required>
+                                        <option value="Married">Đã kết hôn (Married)</option>
+                                        <option value="Single / not married">Độc thân (Single)</option>
+                                        <option value="Civil marriage">Kết hôn dân sự</option>
+                                        <option value="Separated">Ly thân (Separated)</option>
+                                        <option value="Widow">Góa (Widow)</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-child"></i> Số Con / Người Phụ Thuộc</label>
+                                    <input type="number" id="CNT_CHILDREN" value="0" min="0" required>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-briefcase"></i> Số Ngày Làm Việc</label>
+                                    <input type="number" id="DAYS_EMPLOYED" value="1000" min="0" required>
+                                    <small>365 ngày = 1 năm kinh nghiệm</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 2: Financial Info -->
+                        <div class="form-step" data-step="2">
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label><i class="fas fa-file-contract"></i> Loại Hợp Đồng</label>
+                                    <select id="NAME_CONTRACT_TYPE" required>
+                                        <option value="Cash loans">Khoản vay tiền mặt</option>
+                                        <option value="Revolving loans">Khoản vay tiêu dùng</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-wallet"></i> Tổng Thu Nhập (Năm)</label>
+                                    <div class="input-wrap">
+                                        <input type="number" id="AMT_INCOME_TOTAL" value="150000" required>
+                                        <span class="input-suffix">₫</span>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-hand-holding-usd"></i> Số Tiền Muốn Vay</label>
+                                    <div class="input-wrap">
+                                        <input type="number" id="AMT_CREDIT" value="500000" required>
+                                        <span class="input-suffix">₫</span>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-calendar-check"></i> Tiền Trả Định Kỳ (Năm)</label>
+                                    <div class="input-wrap">
+                                        <input type="number" id="AMT_ANNUITY" value="25000" required>
+                                        <span class="input-suffix">₫</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Live DTI/PTI Preview -->
+                            <div
+                                style="margin-top: 16px; padding: 14px; background: rgba(139,92,246,0.06); border-radius: 10px; border: 1px solid rgba(139,92,246,0.15);">
+                                <div
+                                    style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+                                    <i class="fas fa-chart-line"></i> Chỉ số tài chính (tự động)
+                                </div>
+                                <div style="display: flex; gap: 16px; font-size: 0.82rem;">
+                                    <div>DTI: <strong id="liveDTI" style="color: var(--accent-cyan);">3.3x</strong>
+                                    </div>
+                                    <div>PTI: <strong id="livePTI" style="color: var(--accent-cyan);">16.7%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 3: Property Info -->
+                        <div class="form-step" data-step="3">
+                            <div class="field-grid">
+                                <div class="field">
+                                    <label><i class="fas fa-home"></i> Loại Hình Nhà Ở</label>
+                                    <select id="NAME_HOUSING_TYPE" required>
+                                        <option value="House / apartment">Nhà riêng / Căn hộ</option>
+                                        <option value="With parents">Ở cùng cha mẹ</option>
+                                        <option value="Rented apartment">Nhà thuê</option>
+                                        <option value="Municipal apartment">Căn hộ thành phố</option>
+                                        <option value="Office apartment">Căn hộ văn phòng</option>
+                                        <option value="Co-op apartment">Căn hộ hợp tác xã</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label><i class="fas fa-car"></i> Sở Hữu Xe Ô Tô</label>
+                                    <select id="FLAG_OWN_CAR" required>
+                                        <option value="N">Không có (No)</option>
+                                        <option value="Y">Có (Yes)</option>
+                                    </select>
+                                </div>
+                                <div class="field full">
+                                    <label><i class="fas fa-building"></i> Sở Hữu Bất Động Sản</label>
+                                    <select id="FLAG_OWN_REALTY" required>
+                                        <option value="N">Không có (No)</option>
+                                        <option value="Y">Có (Yes)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 4: Review & Submit -->
+                        <div class="form-step" data-step="4">
+                            <div
+                                style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 20px;">
+                                <div
+                                    style="font-size: 0.78rem; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;">
+                                    <i class="fas fa-clipboard-check"></i> Tóm tắt hồ sơ
+                                </div>
+                                <div id="reviewSummary"
+                                    style="font-size: 0.84rem; line-height: 1.8; color: var(--text-secondary);"></div>
+                            </div>
+                            <button type="submit" id="submitBtn" class="btn btn-submit" style="margin-top: 20px;">
+                                <i class="fas fa-brain"></i> Phân Tích Với AI
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Wizard Navigation -->
+                    <div class="wizard-nav" id="wizardNav">
+                        <button type="button" class="btn btn-ghost" id="prevBtn" style="display: none;">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </button>
+                        <div style="flex: 1;"></div>
+                        <button type="button" class="btn btn-primary" id="nextBtn">
+                            Tiếp theo <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── COL RIGHT: Results ── -->
+            <div class="col-right">
+                <div class="glass" style="min-height: 520px; display: flex; flex-direction: column;">
+                    <!-- No Result Placeholder -->
+                    <div class="result-placeholder" id="noResult">
+                        <i class="fas fa-robot"></i>
+                        <p>Nhập thông tin hồ sơ bên trái<br>để AI tiến hành phân tích rủi ro</p>
+                    </div>
+
+                    <!-- Result Panel -->
+                    <div class="result-panel" id="resultPanel">
+                        <div class="result-status" id="resultStatus">
+                            <div class="status-label">KẾT QUẢ DỰ ĐOÁN</div>
+                            <div class="status-title" id="statusTitle"></div>
+                            <div class="metric-badges" id="metricBadges"></div>
+                        </div>
+
+                        <!-- Gauge -->
+                        <div class="gauge-container">
+                            <svg id="gauge" width="220" height="130" viewBox="0 0 220 130">
+                                <defs>
+                                    <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#34d399" />
+                                        <stop offset="50%" stop-color="#fbbf24" />
+                                        <stop offset="100%" stop-color="#fb7185" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="rgba(255,255,255,0.06)"
+                                    stroke-width="14" stroke-linecap="round" />
+                                <path id="gArc" d="M 20 110 A 90 90 0 0 1 200 110" fill="none" stroke="url(#gGrad)"
+                                    stroke-width="14" stroke-linecap="round" stroke-dasharray="283"
+                                    stroke-dashoffset="283" style="transition: stroke-dashoffset 1s ease;" />
+                                <line id="gNeedle" x1="110" y1="110" x2="110" y2="30" stroke="white" stroke-width="2.5"
+                                    stroke-linecap="round" transform="rotate(-90, 110, 110)"
+                                    style="transition: transform 1s ease;" />
+                                <circle cx="110" cy="110" r="5" fill="white" />
+                                <text id="gPct" x="110" y="98" text-anchor="middle" fill="white" font-size="22"
+                                    font-weight="bold" font-family="Inter, sans-serif">0%</text>
+                            </svg>
+                            <div class="gauge-label">Xác suất rủi ro (vỡ nợ)</div>
+                        </div>
+
+                        <!-- Analysis -->
+                        <div class="analysis-section">
+                            <div class="analysis-title">Phân Tích Chi Tiết</div>
+                            <div id="reasonsList"></div>
+                        </div>
+
+                        <div class="analysis-section" id="suggestSection" style="display: none;">
+                            <div class="analysis-title" style="color: var(--accent-cyan);">💡 Đề xuất cải thiện</div>
+                            <div id="suggestList"></div>
+                        </div>
+
+                        <!-- Feature Importance Toggle -->
+                        <div class="fi-toggle">
+                            <button type="button" onclick="toggleFI()">
+                                <i class="fas fa-chart-bar"></i> Feature Importance
+                            </button>
+                        </div>
+                        <div class="fi-panel" id="fiPanel">
+                            <h3>Các yếu tố ảnh hưởng lớn nhất</h3>
+                            <div id="fiBars"></div>
+                        </div>
+
+                        <!-- Export -->
+                        <button type="button" class="btn btn-export" id="exportBtn" style="display: none;"
+                            onclick="exportPDF()">
+                            <i class="fas fa-file-pdf"></i> Tải Báo Cáo PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ CHATBOT ═══ -->
+    <button id="chatBubble" onclick="toggleChat()" title="AI Assistant">💬</button>
+    <div id="chatPanel">
+        <div class="chat-header">🤖 AI Loan Assistant</div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-msg bot">Xin chào! Tôi là trợ lý AI của hệ thống Loan Predictor. Tôi có thể giải đáp thắc
+                mắc về kết quả phân tích vay vốn. Bạn muốn biết gì?</div>
+        </div>
+        <div class="chat-quick">
+            <button class="quick-btn" onclick="quickAsk('DTI là gì?')">DTI là gì?</button>
+            <button class="quick-btn" onclick="quickAsk('Tại sao bị từ chối?')">Tại sao bị từ chối?</button>
+            <button class="quick-btn" onclick="quickAsk('Làm sao được duyệt?')">Làm sao được duyệt?</button>
+            <button class="quick-btn" onclick="quickAsk('PTI là gì?')">PTI là gì?</button>
+        </div>
+        <div class="chat-input-row">
+            <input class="chat-input" id="chatInput" type="text" placeholder="Nhập câu hỏi..."
+                onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="chat-send" onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         JAVASCRIPT
+         ═══════════════════════════════════════ -->
+    <script>
+        // ── DATA STORES ──
+        let lastFormData = {};
+        let lastResult = {};
+        let defaultChart = null;
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // ── PARTICLES ──
+        (function initParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (6 + Math.random() * 10) + 's';
+                p.style.animationDelay = Math.random() * 8 + 's';
+                p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+                const colors = ['rgba(139,92,246,0.4)', 'rgba(34,211,238,0.3)', 'rgba(52,211,153,0.3)'];
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(p);
+            }
+        })();
+
+        // ── DASHBOARD ──
+        async function initDashboard() {
+            if (typeof Chart === 'undefined') { setTimeout(initDashboard, 200); return; }
+            try {
+                const resp = await fetch('/dashboard_stats');
+                const stats = await resp.json();
+
+                const sub = document.getElementById('dbSubtitle');
+                if (sub) sub.textContent = `Tổng cộng: ${stats.total_records.toLocaleString()} hồ sơ`;
+
+                const el1 = document.getElementById('dbDefaultRate');
+                if (el1) el1.textContent = (stats.default_rate * 100).toFixed(1) + '%';
+
+                const el2 = document.getElementById('dbIncomeMean');
+                if (el2) el2.textContent = stats.income_mean.toLocaleString('vi-VN') + ' ₫';
+
+                const el3 = document.getElementById('dbDaysMean');
+                if (el3) el3.textContent = stats.employment_mean.toLocaleString('vi-VN') + ' ngày';
+
+                const canvas = document.getElementById('defaultChart');
+                if (!canvas) return;
+                defaultChart = new Chart(canvas.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Trả nợ tốt', 'Nợ xấu'],
+                        datasets: [{
+                            data: [1 - stats.default_rate, stats.default_rate],
+                            backgroundColor: ['#34d399', '#fb7185'],
+                            borderWidth: 0,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: { color: '#94a3b8', boxWidth: 10, font: { size: 11, family: 'Inter' } }
+                            }
+                        },
+                        cutout: '72%'
+                    }
+                });
+            } catch (err) { console.error("Dashboard error:", err); }
+        }
+        initDashboard();
+
+        // ── WIZARD LOGIC ──
+        const stepDots = document.querySelectorAll('.step-dot');
+        const formSteps = document.querySelectorAll('.form-step');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const wizardNav = document.getElementById('wizardNav');
+        const progressFill = document.getElementById('progressFill');
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            currentStep = step;
+
+            // Update dots
+            stepDots.forEach((dot, i) => {
+                const s = i + 1;
+                dot.classList.remove('active', 'done');
+                if (s === currentStep) dot.classList.add('active');
+                else if (s < currentStep) dot.classList.add('done');
+            });
+
+            // Update form steps
+            formSteps.forEach(fs => {
+                fs.classList.remove('active');
+                if (parseInt(fs.dataset.step) === currentStep) fs.classList.add('active');
+            });
+
+            // Update progress bar
+            const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+            progressFill.style.width = `calc(${pct}% - ${pct < 5 ? 0 : 0}px)`;
+
+            // Update nav buttons
+            prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
+            if (currentStep === totalSteps) {
+                wizardNav.style.display = 'none';
+                buildReviewSummary();
+            } else {
+                wizardNav.style.display = 'flex';
+            }
+
+            // Live DTI/PTI on step 2
+            if (currentStep === 2) updateLiveMetrics();
+        }
+
+        nextBtn.addEventListener('click', () => goToStep(currentStep + 1));
+        prevBtn.addEventListener('click', () => goToStep(currentStep - 1));
+
+        // Click on step dot
+        stepDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const s = parseInt(dot.dataset.step);
+                if (s <= currentStep + 1) goToStep(s);
+            });
+        });
+
+        // Live DTI/PTI
+        function updateLiveMetrics() {
+            const income = parseFloat(document.getElementById('AMT_INCOME_TOTAL').value) || 1;
+            const credit = parseFloat(document.getElementById('AMT_CREDIT').value) || 0;
+            const annuity = parseFloat(document.getElementById('AMT_ANNUITY').value) || 0;
+            const dti = credit / income;
+            const pti = (annuity / income) * 100;
+            const dtiEl = document.getElementById('liveDTI');
+            const ptiEl = document.getElementById('livePTI');
+            if (dtiEl) {
+                dtiEl.textContent = dti.toFixed(1) + 'x';
+                dtiEl.style.color = dti > 6 ? 'var(--accent-rose)' : dti > 4 ? 'var(--accent-amber)' : 'var(--accent-emerald)';
+            }
+            if (ptiEl) {
+                ptiEl.textContent = pti.toFixed(1) + '%';
+                ptiEl.style.color = pti > 50 ? 'var(--accent-rose)' : pti > 30 ? 'var(--accent-amber)' : 'var(--accent-emerald)';
+            }
+        }
+
+        ['AMT_INCOME_TOTAL', 'AMT_CREDIT', 'AMT_ANNUITY'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateLiveMetrics);
+        });
+
+        // Review Summary
+        function buildReviewSummary() {
+            const genderMap = { 'M': 'Nam', 'F': 'Nữ' };
+            const rows = [
+                ['Giới tính', genderMap[document.getElementById('CODE_GENDER').value]],
+                ['Tuổi', document.getElementById('AGE').value],
+                ['Học vấn', document.getElementById('NAME_EDUCATION_TYPE').value],
+                ['Hôn nhân', document.getElementById('NAME_FAMILY_STATUS').value],
+                ['Số con', document.getElementById('CNT_CHILDREN').value],
+                ['Kinh nghiệm', document.getElementById('DAYS_EMPLOYED').value + ' ngày'],
+                ['Hợp đồng', document.getElementById('NAME_CONTRACT_TYPE').value],
+                ['Thu nhập/năm', parseFloat(document.getElementById('AMT_INCOME_TOTAL').value).toLocaleString('vi-VN') + ' ₫'],
+                ['Số tiền vay', parseFloat(document.getElementById('AMT_CREDIT').value).toLocaleString('vi-VN') + ' ₫'],
+                ['Trả định kỳ', parseFloat(document.getElementById('AMT_ANNUITY').value).toLocaleString('vi-VN') + ' ₫'],
+                ['Nhà ở', document.getElementById('NAME_HOUSING_TYPE').value],
+                ['Xe ô tô', document.getElementById('FLAG_OWN_CAR').value === 'Y' ? 'Có' : 'Không'],
+                ['BĐS', document.getElementById('FLAG_OWN_REALTY').value === 'Y' ? 'Có' : 'Không'],
+            ];
+            document.getElementById('reviewSummary').innerHTML = rows.map(([k, v]) =>
+                `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <span style="color:var(--text-muted)">${k}</span>
+                    <strong style="color:var(--text-primary)">${v}</strong>
+                </div>`
+            ).join('');
+        }
+
+        // ── GAUGE ──
+        function updateGauge(prob) {
+            const arcLen = 283;
+            document.getElementById('gArc').setAttribute('stroke-dashoffset', arcLen - (prob * arcLen));
+            const deg = -90 + (prob * 180);
+            document.getElementById('gNeedle').setAttribute('transform', `rotate(${deg}, 110, 110)`);
+            document.getElementById('gPct').textContent = (prob * 100).toFixed(1) + '%';
+        }
+
+        // ── LOOKUP ──
+        document.getElementById('lookupBtn').addEventListener('click', async () => {
+            const id = document.getElementById('lookupId').value;
+            if (!id) return;
+            const status = document.getElementById('lookupStatus');
+            const btn = document.getElementById('lookupBtn');
+            status.textContent = "Đang tra cứu...";
+            btn.disabled = true;
+
+            try {
+                const resp = await fetch(`/lookup/${id}`);
+                if (!resp.ok) throw new Error("Not found");
+                const data = await resp.json();
+
+                document.getElementById('SK_ID_CURR').value = data.SK_ID_CURR || id;
+                if (data.NAME_CONTRACT_TYPE) document.getElementById('NAME_CONTRACT_TYPE').value = data.NAME_CONTRACT_TYPE;
+                if (data.CODE_GENDER) document.getElementById('CODE_GENDER').value = data.CODE_GENDER;
+                if (data.FLAG_OWN_CAR) document.getElementById('FLAG_OWN_CAR').value = data.FLAG_OWN_CAR;
+                if (data.FLAG_OWN_REALTY) document.getElementById('FLAG_OWN_REALTY').value = data.FLAG_OWN_REALTY;
+                if (data.CNT_CHILDREN !== undefined) document.getElementById('CNT_CHILDREN').value = data.CNT_CHILDREN;
+                if (data.AMT_INCOME_TOTAL) document.getElementById('AMT_INCOME_TOTAL').value = data.AMT_INCOME_TOTAL;
+                if (data.AMT_CREDIT) document.getElementById('AMT_CREDIT').value = data.AMT_CREDIT;
+                if (data.AMT_ANNUITY) document.getElementById('AMT_ANNUITY').value = data.AMT_ANNUITY;
+                if (data.NAME_EDUCATION_TYPE) document.getElementById('NAME_EDUCATION_TYPE').value = data.NAME_EDUCATION_TYPE;
+                if (data.NAME_FAMILY_STATUS) document.getElementById('NAME_FAMILY_STATUS').value = data.NAME_FAMILY_STATUS;
+                if (data.NAME_HOUSING_TYPE) document.getElementById('NAME_HOUSING_TYPE').value = data.NAME_HOUSING_TYPE;
+                if (data.AGE) document.getElementById('AGE').value = data.AGE;
+                if (data.DAYS_EMPLOYED) document.getElementById('DAYS_EMPLOYED').value = data.DAYS_EMPLOYED;
+
+                status.innerHTML = `<span style="color: var(--accent-emerald)"><i class="fas fa-check-circle"></i> Đã tìm thấy dữ liệu cho ID ${id}. Lịch sử tín dụng đã được nạp.</span>`;
+            } catch (err) {
+                status.innerHTML = `<span style="color: var(--accent-rose)"><i class="fas fa-exclamation-triangle"></i> ID không tồn tại. Vui lòng nhập dữ liệu thủ công.</span>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // ── FORM SUBMIT ──
+        document.getElementById('loanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<span class="spinner"></span> Đang phân tích...';
+            submitBtn.disabled = true;
+
+            const fd = {
+                SK_ID_CURR: parseInt(document.getElementById('SK_ID_CURR').value),
+                NAME_CONTRACT_TYPE: document.getElementById('NAME_CONTRACT_TYPE').value,
+                CODE_GENDER: document.getElementById('CODE_GENDER').value,
+                FLAG_OWN_CAR: document.getElementById('FLAG_OWN_CAR').value,
+                FLAG_OWN_REALTY: document.getElementById('FLAG_OWN_REALTY').value,
+                CNT_CHILDREN: parseInt(document.getElementById('CNT_CHILDREN').value),
+                AMT_INCOME_TOTAL: parseFloat(document.getElementById('AMT_INCOME_TOTAL').value),
+                AMT_CREDIT: parseFloat(document.getElementById('AMT_CREDIT').value),
+                AMT_ANNUITY: parseFloat(document.getElementById('AMT_ANNUITY').value),
+                NAME_EDUCATION_TYPE: document.getElementById('NAME_EDUCATION_TYPE').value,
+                NAME_FAMILY_STATUS: document.getElementById('NAME_FAMILY_STATUS').value,
+                NAME_HOUSING_TYPE: document.getElementById('NAME_HOUSING_TYPE').value,
+                AGE: parseInt(document.getElementById('AGE').value),
+                DAYS_EMPLOYED: parseFloat(document.getElementById('DAYS_EMPLOYED').value)
+            };
+            lastFormData = fd;
+
+            try {
+                const resp = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fd)
+                });
+                const data = await resp.json();
+                lastResult = data;
+
+                // Show result
+                document.getElementById('noResult').style.display = 'none';
+                const panel = document.getElementById('resultPanel');
+                panel.classList.add('show');
+
+                // Status
+                const statusDiv = document.getElementById('resultStatus');
+                statusDiv.className = 'result-status';
+                let title, statusClass;
+                if (data.prediction_code === 0) {
+                    title = '✅ Duyệt — Cho Vay';
+                    statusClass = 'approved';
+                } else if (data.prediction_code === 2) {
+                    title = '⚠️ Cần Xem Xét';
+                    statusClass = 'pending';
+                } else {
+                    title = '❌ Không Cho Vay';
+                    statusClass = 'rejected';
+                }
+                statusDiv.classList.add(statusClass);
+                document.getElementById('statusTitle').textContent = title;
+
+                // Metric badges
+                const badges = document.getElementById('metricBadges');
+                badges.innerHTML = '';
+                if (data.dti !== undefined) {
+                    const dtiClass = data.dti > 6 ? 'badge-bad' : data.dti > 4 ? 'badge-warn' : 'badge-good';
+                    badges.innerHTML += `<span class="metric-badge ${dtiClass}">DTI: ${data.dti}x</span>`;
+                }
+                if (data.pti !== undefined) {
+                    const ptiClass = data.pti > 50 ? 'badge-bad' : data.pti > 30 ? 'badge-warn' : 'badge-good';
+                    badges.innerHTML += `<span class="metric-badge ${ptiClass}">PTI: ${data.pti}%</span>`;
+                }
+
+                // Gauge
+                updateGauge(Math.min(data.confidence, 1.0));
+
+                // Reasons
+                const rList = document.getElementById('reasonsList');
+                rList.innerHTML = '';
+                (data.reasons || []).forEach(r => {
+                    const d = document.createElement('div');
+                    const isOk = r.startsWith('[OK]');
+                    d.className = 'reason-card ' + (isOk ? 'ok' : 'risk');
+                    d.innerHTML = `<span>${isOk ? '✓' : '⚠'}</span><span>${isOk ? r.replace('[OK] ', '') : r}</span>`;
+                    rList.appendChild(d);
+                });
+
+                // Suggestions
+                const sSection = document.getElementById('suggestSection');
+                const sList = document.getElementById('suggestList');
+                sList.innerHTML = '';
+                if ((data.suggestions || []).length > 0) {
+                    sSection.style.display = 'block';
+                    data.suggestions.forEach(s => {
+                        const d = document.createElement('div');
+                        d.className = 'suggest-card';
+                        d.innerHTML = `<span>→</span> ${s}`;
+                        sList.appendChild(d);
+                    });
+                } else {
+                    sSection.style.display = 'none';
+                }
+
+                document.getElementById('exportBtn').style.display = 'block';
+
+                // Load feature importance
+                loadFeatureImportance();
+
+                // Scroll to result
+                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            } catch (err) {
+                alert('Lỗi kết nối đến server AI!');
+                console.error(err);
+            } finally {
+                submitBtn.innerHTML = '<i class="fas fa-brain"></i> Phân Tích Với AI';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // ── FEATURE IMPORTANCE ──
+        async function loadFeatureImportance() {
+            try {
+                const resp = await fetch('/feature_importance');
+                const data = await resp.json();
+                const container = document.getElementById('fiBars');
+                container.innerHTML = '';
+                const maxVal = data.features[0]?.importance || 1;
+                data.features.forEach((f, i) => {
+                    const pct = (f.importance / maxVal) * 100;
+                    container.innerHTML += `
+                        <div class="bar-item">
+                            <span class="bar-name">${f.feature}</span>
+                            <div class="bar-track"><div class="bar-fill" style="width: 0%;" data-width="${pct}%"></div></div>
+                            <span class="bar-pct">${f.importance.toFixed(1)}%</span>
+                        </div>`;
+                });
+                // Animate bars
+                setTimeout(() => {
+                    container.querySelectorAll('.bar-fill').forEach(bar => {
+                        bar.style.width = bar.dataset.width;
+                    });
+                }, 100);
+            } catch (err) { console.error("FI error:", err); }
+        }
+
+        function toggleFI() {
+            document.getElementById('fiPanel').classList.toggle('show');
+        }
+
+        // ── CHATBOT ──
+        function toggleChat() {
+            document.getElementById('chatPanel').classList.toggle('open');
+        }
+
+        function quickAsk(q) {
+            document.getElementById('chatInput').value = q;
+            sendChat();
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            const q = input.value.trim();
+            if (!q) return;
+            input.value = '';
+            addMsg(q, 'user');
+
+            const loadingId = showTyping();
+
+            const context = {
+                ...lastFormData,
+                "Kết quả AI": lastResult.risk_status || "Chưa phân tích",
+                "Xác suất rủi ro": lastResult.confidence ? (lastResult.confidence * 100).toFixed(1) + "%" : "N/A",
+                "Lý do chính": (lastResult.reasons || []).join(", "),
+                "Gợi ý": (lastResult.suggestions || []).join(", ")
+            };
+
+            try {
+                const resp = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: q, context })
+                });
+                const data = await resp.json();
+                hideTyping(loadingId);
+                addMsg(data.response, 'bot');
+            } catch (err) {
+                hideTyping(loadingId);
+                addMsg('Lỗi kết nối AI. Vui lòng thử lại.', 'bot');
+            }
+        }
+
+        function showTyping() {
+            const body = document.getElementById('chatBody');
+            const div = document.createElement('div');
+            const id = 'typing-' + Date.now();
+            div.id = id;
+            div.className = 'typing';
+            div.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>';
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+            return id;
+        }
+
+        function hideTyping(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function addMsg(text, role) {
+            const body = document.getElementById('chatBody');
+            const div = document.createElement('div');
+            div.className = `chat-msg ${role}`;
+            if (role === 'bot') {
+                let html = text
+                    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/### (.*?)(<br>|$)/g, '<h4 style="font-size:0.88rem;margin:8px 0 4px;color:#c4b5fd">$1</h4>')
+                    .replace(/^- (.*?)(<br>|$)/gm, '• $1$2');
+                div.innerHTML = html;
+            } else {
+                div.textContent = text;
+            }
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        // ── PDF EXPORT ──
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const now = new Date().toLocaleString('vi-VN');
+            const ok = lastResult.prediction_code === 0;
+            const pending = lastResult.prediction_code === 2;
+
+            // Header
+            doc.setFillColor(15, 10, 40);
+            doc.rect(0, 0, 210, 42, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+            doc.text('BAO CAO PHAN TICH RUI RO TIN DUNG', 105, 18, { align: 'center' });
+            doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+            doc.text('AI Loan Predictor | XGBoost + Gemini AI', 105, 30, { align: 'center' });
+            doc.text(`Thoi gian xuat: ${now}`, 105, 38, { align: 'center' });
+
+            // Result banner
+            let bannerColor, textColor, statusText;
+            if (ok) {
+                bannerColor = [220, 252, 231]; textColor = [22, 101, 52];
+                statusText = 'KET QUA: DUYET - RUI RO THAP';
+            } else if (pending) {
+                bannerColor = [255, 250, 230]; textColor = [185, 140, 0];
+                statusText = 'KET QUA: CAN XEM XET - RUI RO TRUNG BINH';
+            } else {
+                bannerColor = [254, 226, 226]; textColor = [185, 28, 28];
+                statusText = 'KET QUA: TU CHOI - RUI RO CAO';
+            }
+
+            doc.setFillColor(...bannerColor);
+            doc.roundedRect(14, 50, 182, 20, 4, 4, 'F');
+            doc.setFontSize(13); doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...textColor);
+            doc.text(statusText, 105, 63, { align: 'center' });
+            doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            doc.text(`Xac suat rui ro: ${(lastResult.confidence * 100).toFixed(1)}%  |  DTI: ${lastResult.dti}x  |  PTI: ${lastResult.pti}%`, 105, 75, { align: 'center' });
+
+            doc.setDrawColor(210, 210, 210); doc.line(14, 82, 196, 82);
+
+            // Info table
+            doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(40, 40, 40);
+            doc.text('THONG TIN HO SO', 14, 91);
+            const rows = [
+                ['Loai hop dong', lastFormData.NAME_CONTRACT_TYPE],
+                ['Gioi tinh', lastFormData.CODE_GENDER === 'M' ? 'Nam' : 'Nu'],
+                ['Tuoi', String(lastFormData.AGE)],
+                ['So con', String(lastFormData.CNT_CHILDREN)],
+                ['Thu nhap/nam', lastFormData.AMT_INCOME_TOTAL.toLocaleString('vi-VN') + ' VND'],
+                ['So tien vay', lastFormData.AMT_CREDIT.toLocaleString('vi-VN') + ' VND'],
+                ['Tra dinh ky/nam', lastFormData.AMT_ANNUITY.toLocaleString('vi-VN') + ' VND'],
+                ['DTI (No/Thu nhap)', lastResult.dti + 'x'],
+                ['PTI (Tra no/Thu nhap)', lastResult.pti + '%'],
+                ['Hoc van', lastFormData.NAME_EDUCATION_TYPE],
+                ['Hon nhan', lastFormData.NAME_FAMILY_STATUS],
+                ['Nha o', lastFormData.NAME_HOUSING_TYPE],
+                ['So ngay lam viec', String(lastFormData.DAYS_EMPLOYED)],
+                ['Xe oto', lastFormData.FLAG_OWN_CAR === 'Y' ? 'Co' : 'Khong'],
+                ['Bat dong san', lastFormData.FLAG_OWN_REALTY === 'Y' ? 'Co' : 'Khong'],
+            ];
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+            let y = 100;
+            rows.forEach(([k, v], i) => {
+                doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 248 : 255);
+                doc.rect(14, y - 5, 182, 9, 'F');
+                doc.setTextColor(90, 90, 90); doc.text(k, 18, y);
+                doc.setTextColor(20, 20, 20); doc.setFont('helvetica', 'bold');
+                doc.text(String(v), 120, y);
+                doc.setFont('helvetica', 'normal');
+                y += 9;
+            });
+
+            // Reasons
+            y += 4;
+            doc.setDrawColor(210, 210, 210); doc.line(14, y, 196, y); y += 8;
+            doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(40, 40, 40);
+            doc.text('PHAN TICH CHI TIET', 14, y); y += 8;
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            (lastResult.reasons || []).forEach(r => {
+                const isOk = r.startsWith('[OK]');
+                doc.setTextColor(isOk ? 22 : 185, isOk ? 101 : 28, isOk ? 52 : 28);
+                const cleanText = r.replace('[OK] ', '').replace(/[^\x00-\x7F]/g, "");
+                doc.text('-> ' + cleanText, 18, y); y += 7;
+            });
+
+            if ((lastResult.suggestions || []).length > 0) {
+                y += 4; doc.line(14, y, 196, y); y += 8;
+                doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 80, 185);
+                doc.text('DE XUAT CAI THIEN:', 14, y); y += 8;
+                doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(30, 80, 185);
+                (lastResult.suggestions || []).forEach(s => {
+                    doc.text('-> ' + s.replace(/[^\x00-\x7F]/g, ""), 18, y); y += 7;
+                });
+            }
+
+            // Footer
+            doc.setFontSize(8); doc.setTextColor(160, 160, 160);
+            doc.text('--- Bao cao duoc tao tu dong boi He thong AI Loan Predictor ---', 105, 285, { align: 'center' });
+
+            doc.save(`BaoCaoVay_${Date.now()}.pdf`);
+        }
+    </script>
+</body>
+
+</html>

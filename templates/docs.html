@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Tài Liệu Hướng Dẫn | AI Loan Predictor{% endblock %}
+
+{% block content %}
+<div class="glass" style="max-width: 900px; margin: 0 auto; line-height: 1.8;">
+    <div class="glass-title" style="font-size: 1.4rem; color: white;">
+        <i class="fas fa-book-open"></i> Tài Liệu Hệ Thống
+    </div>
+
+    <div
+        style="background: rgba(139, 92, 246, 0.1); border-left: 4px solid var(--accent-purple); padding: 16px; margin-bottom: 24px; border-radius: 0 8px 8px 0;">
+        <h3 style="color: var(--accent-purple); margin-bottom: 8px;">Giới Thiệu Chung</h3>
+        <p style="color: var(--text-primary); font-size: 0.95rem;">
+            AI Loan Predictor là hệ thống trí tuệ nhân tạo được phát triển nhằm hỗ trợ quá trình ra quyết định tín dụng.
+            Hệ thống sử dụng mô hình học máy <strong>XGBoost</strong> để phân tích rủi ro dựa trên dữ liệu lịch sử tín
+            dụng, kết hợp với <strong>Gemini AI</strong> cung cấp trải nghiệm tư vấn tài chính trực quan.
+        </p>
+    </div>
+
+    <h3 style="color: var(--accent-cyan); margin-bottom: 12px;"><i class="fas fa-calculator"></i> Các Chỉ Số Tài Chính
+        Cốt Lõi</h3>
+    <div class="stat-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 30px;">
+        <div class="stat-card" style="text-align: left; padding: 20px;">
+            <div style="color: white; font-weight: 700; margin-bottom: 8px;">DTI (Debt-to-Income)</div>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">Tỷ lệ tổng dư nợ trên tổng
+                thu nhập. Chỉ số này cho biết quy mô khoản vay so với năng lực tài chính của khách hàng.</p>
+            <ul style="color: var(--text-muted); font-size: 0.8rem; padding-left: 20px;">
+                <li><strong style="color: var(--accent-emerald);">DTI < 3x:</strong> An toàn</li>
+                <li><strong style="color: var(--accent-amber);">DTI 4-6x:</strong> Tiềm ẩn rủi ro</li>
+                <li><strong style="color: var(--accent-rose);">DTI > 6x:</strong> Rủi ro cao</li>
+            </ul>
+        </div>
+        <div class="stat-card" style="text-align: left; padding: 20px;">
+            <div style="color: white; font-weight: 700; margin-bottom: 8px;">PTI (Payment-to-Income)</div>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 12px;">Tỷ lệ số tiền phải trả
+                định kỳ trên tổng thu nhập. Chỉ báo về áp lực trả nợ dòng tiền hàng tháng/năm.</p>
+            <ul style="color: var(--text-muted); font-size: 0.8rem; padding-left: 20px;">
+                <li><strong style="color: var(--accent-emerald);">PTI < 30%:</strong> Trong tầm kiểm soát</li>
+                <li><strong style="color: var(--accent-amber);">PTI 30-50%:</strong> Gánh nặng lớn</li>
+                <li><strong style="color: var(--accent-rose);">PTI > 50%:</strong> Nguy cơ trả chậm</li>
+            </ul>
+        </div>
+    </div>
+
+    <h3 style="color: var(--accent-cyan); margin-bottom: 12px;"><i class="fas fa-network-wired"></i> Kiến Trúc Kỹ Thuật
+    </h3>
+    <ul style="color: var(--text-secondary); margin-bottom: 30px; font-size: 0.95rem; line-height: 2;">
+        <li><strong>Backend:</strong> FastAPI (Python), Uvicorn, **ReportLab (PDF Generation)**</li>
+        <li><strong>AI/ML Model:</strong> XGBoost Classifier, Scikit-learn (Label Encoding)</li>
+        <li><strong>LLM Integration:</strong> Google GenAI SDK (**Gemini 3 Flash Preview**)</li>
+        <li><strong>Frontend:</strong> HTML5, CSS Variables, Vanilla JS, Chart.js</li>
+    </ul>
+
+    <h3 style="color: var(--accent-cyan); margin-bottom: 12px;"><i class="fas fa-sliders-h"></i> Các Cột Features Chính
+    </h3>
+    <table style="width: 100%; text-align: left; border-collapse: collapse; margin-bottom: 30px; font-size: 0.85rem;">
+        <tr style="border-bottom: 1px solid var(--glass-border); color: var(--text-muted);">
+            <th style="padding: 12px;">Trường Dữ Liệu</th>
+            <th style="padding: 12px;">Phân Loại</th>
+            <th style="padding: 12px;">Mô tả</th>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <td style="padding: 12px; color: white;">EXT_SOURCE_1/2/3</td>
+            <td style="padding: 12px;"><span
+                    style="background: var(--accent-purple-dim); color: #c4b5fd; padding: 3px 8px; border-radius: 4px;">Float</span>
+            </td>
+            <td style="padding: 12px; color: var(--text-secondary);">Điểm tín dụng từ các tổ chức bên thứ 3 (Quan trọng
+                nhất)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <td style="padding: 12px; color: white;">DAYS_BIRTH / DAYS_EMPLOYED</td>
+            <td style="padding: 12px;"><span
+                    style="background: var(--accent-amber-dim); color: #fde68a; padding: 3px 8px; border-radius: 4px;">Integer</span>
+            </td>
+            <td style="padding: 12px; color: var(--text-secondary);">Thời gian (đổi ra ngày) thể hiện độ tuổi và thâm
+                niên làm việc</td>
+        </tr>
+        <tr>
+            <td style="padding: 12px; color: white;">AMT_INCOME_TOTAL / AMT_CREDIT</td>
+            <td style="padding: 12px;"><span
+                    style="background: var(--accent-cyan-dim); color: #a5f3fc; padding: 3px 8px; border-radius: 4px;">Numeric</span>
+            </td>
+            <td style="padding: 12px; color: var(--text-secondary);">Tổng thu nhập khách hàng và Quy mô khoản vay yêu
+                cầu</td>
+        </tr>
+    </table>
+
+</div>
+{% endblock %}

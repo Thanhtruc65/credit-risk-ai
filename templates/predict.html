@@ -1,0 +1,620 @@
+{% extends "base.html" %}
+{% block title %}Dự Đoán Khoản Vay | AI Loan Predictor{% endblock %}
+
+{% block content %}
+<div class="main-grid">
+    <!-- ── COL 1: Form Wizard ── -->
+    <div class="col-center">
+        <div class="glass">
+            <div class="glass-title"><i class="fas fa-file-invoice-dollar"></i> Nhập Hồ Sơ Vay Vốn</div>
+
+            <!-- Client Lookup -->
+            <div class="lookup-bar">
+                <label><i class="fas fa-search"></i> Tra cứu lịch sử tín dụng (Client ID)</label>
+                <div class="lookup-row">
+                    <input type="number" id="lookupId" placeholder="Nhập SK_ID_CURR (VD: 100002)">
+                    <button type="button" id="lookupBtn">Kiểm tra</button>
+                </div>
+                <p class="lookup-status" id="lookupStatus"></p>
+            </div>
+
+            <!-- Wizard Progress -->
+            <div class="wizard-progress">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                <div class="step-dot active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-name">Cá nhân</div>
+                </div>
+                <div class="step-dot" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-name">Tài chính</div>
+                </div>
+                <div class="step-dot" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-name">Tài sản</div>
+                </div>
+                <div class="step-dot" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-name">Xác nhận</div>
+                </div>
+            </div>
+
+            <form id="loanForm" novalidate>
+                <input type="hidden" id="SK_ID_CURR" value="0">
+
+                <!-- STEP 1: Personal Info -->
+                <div class="form-step active" data-step="1">
+                    <div class="field-grid">
+                        <div class="field">
+                            <label><i class="fas fa-venus-mars"></i> Giới Tính</label>
+                            <select id="CODE_GENDER" required>
+                                <option value="M">Nam</option>
+                                <option value="F">Nữ</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-birthday-cake"></i> Tuổi</label>
+                            <input type="number" id="AGE" value="30" min="18" max="100" required>
+                        </div>
+                        <div class="field full">
+                            <label><i class="fas fa-graduation-cap"></i> Trình Độ Học Vấn</label>
+                            <select id="NAME_EDUCATION_TYPE" required>
+                                <option value="Higher education">Đại học</option>
+                                <option value="Secondary / secondary special">Trung học</option>
+                                <option value="Incomplete higher">Chưa tốt nghiệp ĐH</option>
+                                <option value="Lower secondary">Dưới trung học</option>
+                            </select>
+                        </div>
+                        <div class="field full">
+                            <label><i class="fas fa-heart"></i> Tình Trạng Hôn Nhân</label>
+                            <select id="NAME_FAMILY_STATUS" required>
+                                <option value="Married">Đã kết hôn</option>
+                                <option value="Single / not married">Độc thân</option>
+                                <option value="Civil marriage">Kết hôn dân sự</option>
+                                <option value="Separated">Ly thân</option>
+                                <option value="Widow">Góa</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-child"></i> Người Phụ Thuộc</label>
+                            <input type="number" id="CNT_CHILDREN" value="0" min="0" required>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-briefcase"></i> Số Ngày Làm Việc</label>
+                            <input type="number" id="DAYS_EMPLOYED" value="1000" min="0" required>
+                            <small>365 ngày = 1 năm kinh nghiệm</small>
+                        </div>
+                        <div class="field full">
+                            <label><i class="fas fa-user-tie"></i> Nghề Nghiệp</label>
+                            <select id="OCCUPATION_TYPE">
+                                <option value="None">Không rõ / Khác</option>
+                                <option value="Lao động phổ thông">Lao động phổ thông</option>
+                                <option value="Nhân viên nòng cốt / Biên chế">Nhân viên nòng cốt / Biên chế</option>
+                                <option value="Kế toán">Kế toán</option>
+                                <option value="Quản lý">Quản lý</option>
+                                <option value="Lái xe">Lái xe</option>
+                                <option value="Nhân viên bán hàng">Nhân viên bán hàng</option>
+                                <option value="Nhân viên vệ sinh">Nhân viên vệ sinh</option>
+                                <option value="Nhân viên nấu ăn">Nhân viên nấu ăn</option>
+                                <option value="Nhân viên dịch vụ tư nhân">Nhân viên dịch vụ tư nhân</option>
+                                <option value="Nhân viên y tế">Nhân viên y tế</option>
+                                <option value="Nhân viên an ninh">Nhân viên an ninh</option>
+                                <option value="Kỹ thuật viên bậc cao">Kỹ thuật viên bậc cao</option>
+                                <option value="Bồi bàn / Pha chế">Bồi bàn / Pha chế</option>
+                                <option value="Lao động kỹ năng thấp">Lao động kỹ năng thấp</option>
+                                <option value="Nhân viên môi giới BĐS">Nhân viên môi giới BĐS</option>
+                                <option value="Thư ký">Thư ký</option>
+                                <option value="Nhân viên IT">Nhân viên IT</option>
+                                <option value="Nhân viên nhân sự">Nhân viên nhân sự</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Financial Info -->
+                <div class="form-step" data-step="2">
+                    <div class="field-grid">
+                        <div class="field full">
+                            <label><i class="fas fa-file-contract"></i> Loại Hợp Đồng</label>
+                            <select id="NAME_CONTRACT_TYPE" required>
+                                <option value="Cash loans">Khoản vay tiền mặt</option>
+                                <option value="Revolving loans">Khoản vay tiêu dùng</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-wallet"></i> Tổng Thu Nhập (Năm)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="AMT_INCOME_TOTAL" value="150000" required>
+                                <span class="input-suffix">₫</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-hand-holding-usd"></i> Số Tiền Muốn Vay</label>
+                            <div class="input-wrap">
+                                <input type="number" id="AMT_CREDIT" value="500000" required>
+                                <span class="input-suffix">₫</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-list-ol"></i> Số Khoản Vay (Nợ Khác)</label>
+                            <input type="number" id="ACTIVE_LOANS_COUNT" value="0" min="0" required>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-file-invoice-dollar"></i> Tổng Nợ Hiện Tại Khác</label>
+                            <div class="input-wrap">
+                                <input type="number" id="CURRENT_DEBT_TOTAL" value="0" min="0" required>
+                                <span class="input-suffix">₫</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-exclamation-triangle"></i> Lịch Sử Trễ Hạn (Ngày)</label>
+                            <input type="number" id="MAX_DPD" value="0" min="0" required>
+                            <small>Số ngày cao nhất từng trễ (nợ xấu)</small>
+                        </div>
+                        <div class="field full">
+                            <label><i class="fas fa-calendar-check"></i> Tiền Trả Định Kỳ (Năm)</label>
+                            <div class="input-wrap">
+                                <input type="number" id="AMT_ANNUITY" value="25000" required>
+                                <span class="input-suffix">₫</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Live DTI/PTI Preview -->
+                    <div
+                        style="margin-top: 16px; padding: 14px; background: rgba(139,92,246,0.06); border-radius: 10px; border: 1px solid rgba(139,92,246,0.15);">
+                        <div
+                            style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">
+                            <i class="fas fa-chart-line"></i> Chỉ số tài chính
+                        </div>
+                        <div style="display: flex; gap: 16px; font-size: 0.85rem;">
+                            <div>DTI: <strong id="liveDTI" style="color: var(--accent-cyan);">3.3x</strong></div>
+                            <div>PTI: <strong id="livePTI" style="color: var(--accent-cyan);">16.7%</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Property Info -->
+                <div class="form-step" data-step="3">
+                    <div class="field-grid">
+                        <div class="field full">
+                            <label><i class="fas fa-home"></i> Loại Hình Nhà Ở</label>
+                            <select id="NAME_HOUSING_TYPE" required>
+                                <option value="House / apartment">Nhà riêng / Căn hộ</option>
+                                <option value="With parents">Ở cùng cha mẹ</option>
+                                <option value="Rented apartment">Nhà thuê</option>
+                                <option value="Office apartment">Căn hộ văn phòng</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-car"></i> Sở Hữu Xe Ô Tô</label>
+                            <select id="FLAG_OWN_CAR" required>
+                                <option value="N">Không</option>
+                                <option value="Y">Có</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label><i class="fas fa-building"></i> Sở Hữu BĐS</label>
+                            <select id="FLAG_OWN_REALTY" required>
+                                <option value="N">Không</option>
+                                <option value="Y">Có</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Review -->
+                <div class="form-step" data-step="4">
+                    <div
+                        style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px;">
+                        <div
+                            style="font-size: 0.8rem; font-weight: 700; color: var(--accent-purple); margin-bottom: 14px;">
+                            <i class="fas fa-clipboard-check"></i> Tóm tắt hồ sơ
+                        </div>
+                        <div id="reviewSummary"
+                            style="font-size: 0.85rem; line-height: 1.8; color: var(--text-secondary);"></div>
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn btn-submit" style="margin-top: 24px;">
+                        <i class="fas fa-brain"></i> Phân Tích Với AI
+                    </button>
+                </div>
+            </form>
+
+            <div class="wizard-nav" id="wizardNav">
+                <button type="button" class="btn btn-ghost" id="prevBtn" style="display: none;"><i
+                        class="fas fa-arrow-left"></i> Quay lại</button>
+                <div style="flex: 1;"></div>
+                <button type="button" class="btn btn-primary" id="nextBtn">Tiếp theo <i
+                        class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── COL 2: Results ── -->
+    <div class="col-right">
+        <div class="glass" style="min-height: 520px; display: flex; flex-direction: column;">
+            <div class="result-placeholder" id="noResult">
+                <i class="fas fa-robot"></i>
+                <p>Nhập thông tin hồ sơ bên trái<br>để AI tiến hành phân tích rủi ro</p>
+            </div>
+
+            <div class="result-panel shine-effect" id="resultPanel">
+                <div class="result-status" id="resultStatus">
+                    <div class="status-label">KẾT QUẢ DỰ ĐOÁN</div>
+                    <div class="status-title neon-text" id="statusTitle"></div>
+                    <div class="metric-badges" id="metricBadges"></div>
+                </div>
+
+                <div class="gauge-container">
+                    <svg id="gauge" width="220" height="130" viewBox="0 0 220 130">
+                        <defs>
+                            <linearGradient id="gGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#34d399" />
+                                <stop offset="50%" stop-color="#fbbf24" />
+                                <stop offset="100%" stop-color="#fb7185" />
+                            </linearGradient>
+                            <filter id="gGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="3" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+                        <path d="M30,110 A80,80 0 0,1 190,110" fill="none" stroke="rgba(255,255,255,0.05)"
+                            stroke-width="12" stroke-linecap="round" />
+                        <path id="gArc" d="M30,110 A80,80 0 0,1 190,110" fill="none" stroke="url(#gGrad)"
+                            stroke-width="12" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"
+                            style="filter: url(#gGlow); transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);" />
+                        <line id="gNeedle" x1="110" y1="110" x2="110" y2="40" stroke="white" stroke-width="4"
+                            stroke-linecap="round"
+                            style="filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);" />
+                        <circle cx="110" cy="110" r="6" fill="white" />
+                    </svg>
+                    <div id="gPct"
+                        style="font-size: 2.2rem; font-weight: 800; margin-top: -30px; color: white; text-shadow: 0 0 15px rgba(255,255,255,0.3);">
+                        0%</div>
+                    <div class="gauge-label">Xác suất rủi ro dự báo</div>
+                </div>
+
+                <div class="analysis-section" style="margin-top: 16px;">
+                    <div class="analysis-title">Phân Tích Chi Tiết</div>
+                    <div id="reasonsList"></div>
+                </div>
+
+                <div class="analysis-section" id="suggestSection" style="display: none; margin-top: 16px;">
+                    <div class="analysis-title" style="color: var(--accent-cyan);">💡 Đề xuất cải thiện</div>
+                    <div id="suggestList"></div>
+                </div>
+
+                <div class="fi-toggle">
+                    <button type="button" onclick="toggleFI()"><i class="fas fa-chart-bar"></i> Feature
+                        Importance</button>
+                </div>
+                <div class="fi-panel" id="fiPanel">
+                    <h3>Các yếu tố ảnh hưởng lớn nhất</h3>
+                    <div id="fiBars"></div>
+                </div>
+
+                <button type="button" class="btn btn-export" id="exportBtn" style="display: none;"
+                    onclick="exportPDF()">
+                    <i class="fas fa-file-pdf"></i> Tải Báo Cáo PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── HIDDEN PDF TEMPLATE ── -->
+<div id="pdf-container"
+    style="position: absolute; left: -9999px; top: -9999px; font-family: 'Inter', sans-serif; color: #333; padding: 40px; background: white; width: 800px;">
+    <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #8b5cf6; padding-bottom: 20px; margin-bottom: 30px;">
+        <div>
+            <h1 style="margin: 0; color: #8b5cf6; font-size: 24px;">AI LOAN PREDICTOR</h1>
+            <p style="margin: 5px 0 0; color: #666; font-size: 14px;">Báo cáo phân tích rủi ro tín dụng</p>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin: 0; font-weight: bold;">Mã hồ sơ: <span id="pdf-id"></span></p>
+            <p style="margin: 5px 0 0; color: #666; font-size: 12px;">Ngày xuất: <span id="pdf-date"></span></p>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <h2 style="font-size: 18px; border-left: 4px solid #8b5cf6; padding-left: 10px; margin-bottom: 15px;">1. KẾT QUẢ
+            PHÂN TÍCH</h2>
+        <div
+            style="background: #f8fafc; padding: 20px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <p style="margin: 0; font-size: 14px; color: #64748b;">Trạng thái:</p>
+                <p id="pdf-status" style="margin: 5px 0 0; font-size: 20px; font-weight: bold;"></p>
+            </div>
+            <div style="text-align: center;">
+                <p style="margin: 0; font-size: 14px; color: #64748b;">Xác suất rủi ro:</p>
+                <p id="pdf-risk" style="margin: 5px 0 0; font-size: 24px; font-weight: 800; color: #8b5cf6;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <h2 style="font-size: 16px; margin-bottom: 10px;">Thông tin cá nhân</h2>
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Giới tính:</td>
+                    <td id="pdf-gender" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Tuổi:</td>
+                    <td id="pdf-age" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Học vấn:</td>
+                    <td id="pdf-edu" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Hôn nhân:</td>
+                    <td id="pdf-marriage" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Nghề nghiệp:</td>
+                    <td id="pdf-occ" style="font-weight: 500;"></td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <h2 style="font-size: 16px; margin-bottom: 10px;">Thông tin tài chính</h2>
+            <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Thu nhập/năm:</td>
+                    <td id="pdf-income" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Số tiền vay:</td>
+                    <td id="pdf-credit" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Khoản nợ khác:</td>
+                    <td id="pdf-debt" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">DTI/PTI:</td>
+                    <td id="pdf-ratios" style="font-weight: 500;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px 0; color: #64748b;">Trễ hạn tối đa:</td>
+                    <td id="pdf-dpd" style="font-weight: 500;"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <h2 style="font-size: 16px; margin-bottom: 10px;">Lý do phân tích chi tiết</h2>
+        <div id="pdf-reasons" style="font-size: 13px; line-height: 1.6;"></div>
+    </div>
+
+    <div id="pdf-suggestions-wrap" style="margin-bottom: 30px;">
+        <h2 style="font-size: 16px; margin-bottom: 10px; color: #22d3ee;">Đề xuất cải thiện</h2>
+        <div id="pdf-suggestions" style="font-size: 13px; line-height: 1.6;"></div>
+    </div>
+
+    <div
+        style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; color: #94a3b8; font-size: 11px;">
+        Báo cáo này được tạo tự động bởi Hệ Thống Phân Tích Tín Dụng AI. Thông tin chỉ mang tính chất tham khảo.
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Include full Wizard Logic, Setup gauge, Chat features from static/script.js or inline
+    let lastFormData = {}, lastResult = {}, currentStep = 1;
+    const totalSteps = 4, stepDots = document.querySelectorAll('.step-dot'), formSteps = document.querySelectorAll('.form-step');
+    const prevBtn = document.getElementById('prevBtn'), nextBtn = document.getElementById('nextBtn'), wizardNav = document.getElementById('wizardNav');
+
+    function goToStep(step) {
+        if (step < 1 || step > totalSteps) return;
+        currentStep = step;
+        stepDots.forEach((dot, i) => {
+            dot.classList.remove('active', 'done');
+            if (i + 1 === step) dot.classList.add('active'); else if (i + 1 < step) dot.classList.add('done');
+        });
+        formSteps.forEach(fs => { fs.classList.remove('active'); if (parseInt(fs.dataset.step) === step) fs.classList.add('active'); });
+        const pct = ((currentStep - 1) / (totalSteps - 1)) * 100;
+        document.getElementById('progressFill').style.width = `calc(${pct}% - 0px)`;
+        prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-flex';
+
+        if (currentStep === totalSteps) { wizardNav.style.display = 'none'; buildReviewSummary(); }
+        else { wizardNav.style.display = 'flex'; }
+        if (currentStep === 2) updateLiveMetrics();
+    }
+    nextBtn.addEventListener('click', () => goToStep(currentStep + 1));
+    prevBtn.addEventListener('click', () => goToStep(currentStep - 1));
+    stepDots.forEach(dot => dot.addEventListener('click', () => { if (parseInt(dot.dataset.step) <= currentStep + 1) goToStep(parseInt(dot.dataset.step)); }));
+
+    function updateLiveMetrics() {
+        const income = parseFloat(document.getElementById('AMT_INCOME_TOTAL').value) || 1;
+        const dti = (parseFloat(document.getElementById('AMT_CREDIT').value) || 0) / income;
+        const pti = ((parseFloat(document.getElementById('AMT_ANNUITY').value) || 0) / income) * 100;
+        const el1 = document.getElementById('liveDTI'), el2 = document.getElementById('livePTI');
+        if (el1) { el1.textContent = dti.toFixed(1) + 'x'; el1.style.color = dti > 6 ? 'var(--accent-rose)' : dti > 4 ? 'var(--accent-amber)' : 'var(--accent-emerald)'; }
+        if (el2) { el2.textContent = pti.toFixed(1) + '%'; el2.style.color = pti > 50 ? 'var(--accent-rose)' : pti > 30 ? 'var(--accent-amber)' : 'var(--accent-emerald)'; }
+    }
+    ['AMT_INCOME_TOTAL', 'AMT_CREDIT', 'AMT_ANNUITY'].forEach(id => document.getElementById(id).addEventListener('input', updateLiveMetrics));
+
+    function buildReviewSummary() {
+        const getV = (id) => document.getElementById(id).value;
+        const getT = (id) => {
+            const el = document.getElementById(id);
+            return el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : el.value;
+        };
+
+        const gender = getV('CODE_GENDER') === 'M' ? 'Nam' : 'Nữ';
+        const car = getV('FLAG_OWN_CAR') === 'Y' ? 'Có' : 'Không';
+        const realty = getV('FLAG_OWN_REALTY') === 'Y' ? 'Có' : 'Không';
+
+        document.getElementById('reviewSummary').innerHTML = [
+            `<strong><i class="fas fa-user"></i> CÁ NHÂN</strong>`,
+            `- Giới tính: ${gender} | Tuổi: ${getV('AGE')} | Trẻ em: ${getV('CNT_CHILDREN')}`,
+            `- Học vấn: ${getT('NAME_EDUCATION_TYPE')}`,
+            `- Hôn nhân: ${getT('NAME_FAMILY_STATUS')}`,
+            `- Kinh nghiệm làm việc: ${getV('DAYS_EMPLOYED')} ngày`,
+            `- Nghề nghiệp: ${getT('OCCUPATION_TYPE') || 'Không rõ'}`,
+            `<div style="height:10px;"></div><strong><i class="fas fa-wallet"></i> TÀI CHÍNH</strong>`,
+            `- Thu nhập: ${parseFloat(getV('AMT_INCOME_TOTAL') || 0).toLocaleString('vi-VN')} ₫/năm`,
+            `- Số tiền vay:  ${parseFloat(getV('AMT_CREDIT') || 0).toLocaleString('vi-VN')} ₫`,
+            `- Nợ hiện tại (ngân hàng khác): ${parseFloat(getV('CURRENT_DEBT_TOTAL') || 0).toLocaleString('vi-VN')} ₫`,
+            `- Số khoản nợ khác: ${getV('ACTIVE_LOANS_COUNT')}`,
+            `- Lịch sử trễ hạn cao nhất: ${getV('MAX_DPD')} ngày`,
+            `<div style="height:10px;"></div><strong><i class="fas fa-home"></i> TÀI SẢN & HỢP ĐỒNG</strong>`,
+            `- Hợp đồng: ${getT('NAME_CONTRACT_TYPE')}`,
+            `- Nơi ở: ${getT('NAME_HOUSING_TYPE')}`,
+            `- Sở hữu Ô tô: ${car} | BĐS: ${realty}`
+        ].map(r => `<div style="padding:3px 0; border-bottom: ${r.includes('strong') ? 'none' : '1px dashed var(--glass-border)'};">${r}</div>`).join('');
+    }
+
+    function updateGauge(prob) {
+        const arc = 283; document.getElementById('gArc').setAttribute('stroke-dashoffset', arc - (prob * arc));
+        document.getElementById('gNeedle').setAttribute('transform', `rotate(${-90 + (prob * 180)}, 110, 110)`);
+        document.getElementById('gPct').textContent = (prob * 100).toFixed(1) + '%';
+    }
+
+    // Lookup
+    document.getElementById('lookupBtn').addEventListener('click', async () => {
+        const id = document.getElementById('lookupId').value, s = document.getElementById('lookupStatus'), b = document.getElementById('lookupBtn');
+        if (!id) return; s.textContent = "Đang tra cứu..."; b.disabled = true;
+        try {
+            const r = await fetch(`/lookup/${id}`); if (!r.ok) throw new Error(""); const d = await r.json();
+            document.getElementById('SK_ID_CURR').value = d.SK_ID_CURR || id;
+            ['NAME_CONTRACT_TYPE', 'CODE_GENDER', 'FLAG_OWN_CAR', 'FLAG_OWN_REALTY', 'CNT_CHILDREN', 'AMT_INCOME_TOTAL', 'AMT_CREDIT', 'AMT_ANNUITY', 'NAME_EDUCATION_TYPE', 'NAME_FAMILY_STATUS', 'NAME_HOUSING_TYPE', 'AGE', 'DAYS_EMPLOYED', 'OCCUPATION_TYPE', 'ACTIVE_LOANS_COUNT', 'CURRENT_DEBT_TOTAL', 'MAX_DPD'].forEach(k => {
+                if (d[k] !== undefined && d[k] !== null) {
+                    let val = d[k];
+                    if (['AMT_INCOME_TOTAL', 'AMT_CREDIT', 'AMT_ANNUITY', 'DAYS_EMPLOYED', 'AGE', 'CNT_CHILDREN', 'ACTIVE_LOANS_COUNT', 'CURRENT_DEBT_TOTAL', 'MAX_DPD'].includes(k)) val = Math.round(val);
+                    if (k === 'DAYS_EMPLOYED' && val < 0) val = Math.abs(val); // Often negative in dataset
+                    // avoid setting inputs to NaN string
+                    if (Number.isNaN(val) && typeof d[k] === 'number') val = 0;
+                    document.getElementById(k).value = val;
+                }
+            });
+            s.innerHTML = `<span style="color:var(--accent-emerald)">Đã tải dữ liệu cho ${id}</span>`;
+        } catch (e) { s.innerHTML = `<span style="color:var(--accent-rose)">Không tìm thấy hồ sơ ID này</span>`; }
+        b.disabled = false;
+    });
+
+    // Form Submit
+    document.getElementById('loanForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); const b = document.getElementById('submitBtn'); b.innerHTML = '<span class="spinner"></span> Đang xử lý...'; b.disabled = true;
+
+        lastFormData = {
+            SK_ID_CURR: parseInt(document.getElementById('SK_ID_CURR').value) || 0,
+            NAME_CONTRACT_TYPE: document.getElementById('NAME_CONTRACT_TYPE').value,
+            CODE_GENDER: document.getElementById('CODE_GENDER').value,
+            FLAG_OWN_CAR: document.getElementById('FLAG_OWN_CAR').value,
+            FLAG_OWN_REALTY: document.getElementById('FLAG_OWN_REALTY').value,
+            CNT_CHILDREN: parseInt(document.getElementById('CNT_CHILDREN').value) || 0,
+            AMT_INCOME_TOTAL: parseFloat(document.getElementById('AMT_INCOME_TOTAL').value) || 0,
+            AMT_CREDIT: parseFloat(document.getElementById('AMT_CREDIT').value) || 0,
+            AMT_ANNUITY: parseFloat(document.getElementById('AMT_ANNUITY').value) || 0,
+            NAME_EDUCATION_TYPE: document.getElementById('NAME_EDUCATION_TYPE').value,
+            NAME_FAMILY_STATUS: document.getElementById('NAME_FAMILY_STATUS').value,
+            NAME_HOUSING_TYPE: document.getElementById('NAME_HOUSING_TYPE').value,
+            AGE: parseInt(document.getElementById('AGE').value) || 0,
+            DAYS_EMPLOYED: parseFloat(document.getElementById('DAYS_EMPLOYED').value) || 0,
+            OCCUPATION_TYPE: document.getElementById('OCCUPATION_TYPE').value || "None",
+            ACTIVE_LOANS_COUNT: parseInt(document.getElementById('ACTIVE_LOANS_COUNT').value) || 0,
+            CURRENT_DEBT_TOTAL: parseFloat(document.getElementById('CURRENT_DEBT_TOTAL').value) || 0,
+            MAX_DPD: parseInt(document.getElementById('MAX_DPD').value) || 0
+        };
+
+        try {
+            const r = await fetch('/api/predict', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lastFormData) });
+            const d = await r.json();
+
+            if (!r.ok || d.detail) {
+                alert("Lỗi Backend: " + (d.detail || "Không thể phân tích dữ liệu!"));
+                b.innerHTML = '<i class="fas fa-brain"></i> Phân Tích Với AI'; b.disabled = false;
+                return;
+            }
+
+            lastResult = d;
+            document.getElementById('noResult').style.display = 'none'; document.getElementById('resultPanel').classList.add('show');
+            const st = document.getElementById('resultStatus'); st.className = 'result-status';
+            st.classList.add(d.prediction_code === 0 ? 'approved' : d.prediction_code === 2 ? 'pending' : 'rejected');
+            document.getElementById('statusTitle').textContent = d.prediction_code === 0 ? '✅ Duyệt — Rủi ro thấp' : d.prediction_code === 2 ? '⚠️ Cân nhắc — Trung bình' : '❌ Từ chối — Rủi ro cao';
+
+            document.getElementById('metricBadges').innerHTML = (d.dti !== undefined ? `<span class="metric-badge ${d.dti > 6 ? 'badge-bad' : d.dti > 4 ? 'badge-warn' : 'badge-good'}">DTI: ${d.dti}x</span>` : '') + (d.pti !== undefined ? `<span class="metric-badge ${d.pti > 50 ? 'badge-bad' : d.pti > 30 ? 'badge-warn' : 'badge-good'}">PTI: ${d.pti}%</span>` : '');
+            updateGauge(Math.min(d.confidence, 1.0));
+
+            document.getElementById('reasonsList').innerHTML = (d.reasons || []).map(r => {
+                const type = r.startsWith('[OK]') ? 'ok' : r.startsWith('[INFO]') ? 'info' : 'risk';
+                const icon = type === 'ok' ? '✓' : type === 'info' ? 'ℹ' : '⚠';
+                const cleanText = r.replace('[OK] ', '').replace('[INFO] ', '');
+                return `<div class="reason-card ${type}"><span>${icon} ${cleanText}</span></div>`;
+            }).join('');
+
+            const sg = document.getElementById('suggestSection');
+            if (d.suggestions?.length > 0) { sg.style.display = 'block'; document.getElementById('suggestList').innerHTML = d.suggestions.map(s => `<div class="suggest-card">→ ${s}</div>`).join(''); } else sg.style.display = 'none';
+            document.getElementById('exportBtn').style.display = 'block'; loadFeatureImportance(); document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
+        } catch (e) {
+            alert("Lỗi kết nối mạng hoặc lỗi định dạng dữ liệu trả về từ server: " + e.message);
+        }
+
+        b.innerHTML = '<i class="fas fa-brain"></i> Phân Tích Với AI'; b.disabled = false;
+    });
+
+    // Toggle & Load FI
+    function toggleFI() { document.getElementById('fiPanel').classList.toggle('show'); }
+    async function loadFeatureImportance() { try { const r = await fetch('/api/feature_importance'), d = await r.json(), c = document.getElementById('fiBars'), max = d.features[0]?.importance || 1; c.innerHTML = d.features.map(f => `<div class="bar-item"><span class="bar-name">${f.feature}</span><div class="bar-track"><div class="bar-fill" style="width:0" data-width="${(f.importance / max) * 100}%"></div></div><span class="bar-pct">${f.importance.toFixed(1)}%</span></div>`).join(''); setTimeout(() => c.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.width), 100); } catch (e) { } }
+
+
+    function exportPDF() {
+        if (!lastResult || !lastResult.confidence) return alert("Vui lòng thực hiện dự đoán trước khi tải PDF.");
+
+        const btn = document.getElementById('exportBtn');
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo PDF...';
+        btn.disabled = true;
+
+        try {
+            // Send data to backend to generate PDF
+            fetch('/api/export-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    formData: lastFormData,
+                    resultData: lastResult
+                })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error("PDF generation failed");
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create download link
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `BaoCao-AI-${lastFormData.SK_ID_CURR || 'KH'}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                })
+                .catch(e => {
+                    console.error("PDF Error:", e);
+                    alert("Lỗi khi tạo PDF: " + e.message);
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                });
+        } catch (e) {
+            console.error("PDF Error:", e);
+            alert("Lỗi khi tạo PDF: " + e.message);
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+
+</script>
+{% endblock %}

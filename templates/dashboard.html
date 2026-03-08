@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Thống Kê Real-time | AI Loan Predictor{% endblock %}
+
+{% block content %}
+<div class="glass" style="max-width: 1200px; margin: 0 auto;">
+    <div class="glass-title">
+        <i class="fas fa-chart-line"></i> Phân Tích Dữ Liệu Khách Hàng (Real-Time)
+    </div>
+    <p style="color: var(--text-muted); margin-bottom: 30px;">
+        Hệ thống tự động cập nhật thống kê trực tiếp từ Cơ sở dữ liệu hiện hành.
+    </p>
+
+    <!-- Top Stats -->
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 30px;">
+        <div class="stat-card entrance-anim stagger-1" style="text-align: center;">
+            <div class="stat-label">Tổng Số Khách Hàng</div>
+            <div class="stat-value info neon-text" id="totalClients">--</div>
+        </div>
+        <div class="stat-card entrance-anim stagger-2" style="text-align: center;">
+            <div class="stat-label">Hồ Sơ An Toàn</div>
+            <div class="stat-value neon-text" style="color: #34d399;" id="safeClients">--</div>
+        </div>
+        <div class="stat-card entrance-anim stagger-3 fire-glow" style="text-align: center;">
+            <div class="stat-label">Hồ Sơ Rủi Ro Cao</div>
+            <div class="stat-value danger neon-text" id="highRiskClients">--</div>
+        </div>
+        <div class="stat-card entrance-anim stagger-4 fire-glow" style="text-align: center;">
+            <div class="stat-label">Tỷ lệ Nợ Xấu (Default Rate)</div>
+            <div class="stat-value warning neon-text" style="color: #fbbf24;" id="defaultRateOverall">--%</div>
+        </div>
+    </div>
+
+    <div class="db-grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Chart 1: Age Distribution -->
+        <div class="entrance-anim stagger-2"
+            style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px;">
+            <h4
+                style="margin-top: 0; margin-bottom: 20px; font-size: 1rem; color: var(--accent-purple); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-chart-pie"></i> Phân Bổ Độ Tuổi (Pie Chart)
+            </h4>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="ageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Default Rate by Contract -->
+        <div class="entrance-anim stagger-3"
+            style="background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px;">
+            <h4
+                style="margin-top: 0; margin-bottom: 20px; font-size: 1rem; color: var(--accent-rose); display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-chart-bar"></i> Rủi Ro Theo Loại Hợp Đồng (Bar Chart)
+            </h4>
+            <div style="position: relative; height: 260px; width: 100%;">
+                <canvas id="contractChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="entrance-anim stagger-4"
+        style="margin-top: 24px; background: rgba(0,0,0,0.25); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 20px;">
+        <h4
+            style="margin-top: 0; margin-bottom: 20px; font-size: 1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-line"></i> Top 5 Nghề Nghiệp Có Thu Nhập Cao Nhất (Line Chart)
+        </h4>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="incomeChart"></canvas>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function initDashboard() {
+        if (typeof Chart === 'undefined') { setTimeout(initDashboard, 200); return; }
+        try {
+            const resp = await fetch('/api/dashboard-data');
+            const data = await resp.json();
+
+            // 1. Update Top Stats
+            document.getElementById('totalClients').textContent = data.overall_stats.total_clients.toLocaleString('vi-VN');
+            document.getElementById('safeClients').textContent = data.overall_stats.safe_clients.toLocaleString('vi-VN');
+            document.getElementById('highRiskClients').textContent = data.overall_stats.high_risk_clients.toLocaleString('vi-VN');
+            document.getElementById('defaultRateOverall').textContent = data.overall_stats.default_rate_overall + '%';
+
+            // Chart Colors
+            const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = 'Inter';
+
+            // 2. Age Distribution Chart (Doughnut)
+            const ageLabels = data.age_distribution.map(item => item.AgeGroup);
+            const ageCounts = data.age_distribution.map(item => item.Count);
+            new Chart(document.getElementById('ageChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ageLabels,
+                    datasets: [{
+                        data: ageCounts,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // 3. Contract Default Rate Chart (Bar)
+            const contractLabels = data.risk_by_contract.map(item => item.ContractType);
+            const contractRates = data.risk_by_contract.map(item => item.DefaultRate);
+            new Chart(document.getElementById('contractChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: contractLabels,
+                    datasets: [{
+                        label: 'Tỷ lệ nợ xấu (%)',
+                        data: contractRates,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 4. Income by Occupation (Line with fill)
+            const occLabels = data.income_by_occupation.map(item => item.Occupation);
+            const occIncomes = data.income_by_occupation.map(item => item.AvgIncome);
+            new Chart(document.getElementById('incomeChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: occLabels,
+                    datasets: [{
+                        label: 'Thu nhập trung bình (VND)',
+                        data: occIncomes,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+        } catch (err) {
+            console.error("Dashboard error:", err);
+            // Fallback content if SQL fails
+            document.querySelector('.glass').innerHTML += `<div style="color:var(--accent-rose); margin-top: 20px; text-align: center;">❌ Không thể tải dữ liệu từ CSDL. Đảm bảo cấu hình SQL Server hợp lệ (USE_SQL_DB=True)</div>`;
+        }
+    }
+    initDashboard();
+</script>
+{% endblock %}
