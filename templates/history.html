@@ -1,0 +1,559 @@
+{% extends "base.html" %}
+{% block title %}Lịch Sử Dự Đoán | AI Loan Predictor{% endblock %}
+
+{% block content %}
+<div class="hero" style="padding: 30px 0 20px;">
+    <div class="hero-badge entrance-anim"><i class="fas fa-history"></i> Prediction History</div>
+    <h1 class="entrance-anim stagger-1" style="font-size: clamp(1.6rem, 3vw, 2.4rem);">Lịch Sử Dự Đoán</h1>
+    <p class="entrance-anim stagger-2" style="font-size: 0.95rem;">Tất cả các kết quả phân tích rủi ro khoản vay gần đây
+    </p>
+</div>
+
+<!-- Stats Bar -->
+<div class="history-stats entrance-anim stagger-2" id="historyStats" style="display:none;">
+    <div class="hstat-card">
+        <div class="hstat-icon" style="color: var(--accent-cyan);"><i class="fas fa-list-ol"></i></div>
+        <div class="hstat-value" id="totalCount">0</div>
+        <div class="hstat-label">Tổng dự đoán</div>
+    </div>
+    <div class="hstat-card">
+        <div class="hstat-icon" style="color: var(--accent-emerald);"><i class="fas fa-check-circle"></i></div>
+        <div class="hstat-value" id="approvedCount">0</div>
+        <div class="hstat-label">Được duyệt</div>
+    </div>
+    <div class="hstat-card">
+        <div class="hstat-icon" style="color: var(--accent-amber);"><i class="fas fa-exclamation-circle"></i></div>
+        <div class="hstat-value" id="pendingCount">0</div>
+        <div class="hstat-label">Cân nhắc</div>
+    </div>
+    <div class="hstat-card">
+        <div class="hstat-icon" style="color: var(--accent-rose);"><i class="fas fa-times-circle"></i></div>
+        <div class="hstat-value" id="rejectedCount">0</div>
+        <div class="hstat-label">Từ chối</div>
+    </div>
+</div>
+
+<!-- Actions Bar -->
+<div class="history-actions entrance-anim stagger-3" id="historyActions" style="display:none;">
+    <div class="history-filter">
+        <button class="filter-btn active" data-filter="all" onclick="filterHistory('all', this)">Tất cả</button>
+        <button class="filter-btn" data-filter="0" onclick="filterHistory('0', this)"><i class="fas fa-check"></i>
+            Duyệt</button>
+        <button class="filter-btn" data-filter="2" onclick="filterHistory('2', this)"><i class="fas fa-exclamation"></i>
+            Cân nhắc</button>
+        <button class="filter-btn" data-filter="1" onclick="filterHistory('1', this)"><i class="fas fa-times"></i> Từ
+            chối</button>
+    </div>
+    <button class="btn-clear-history" onclick="clearHistory()"><i class="fas fa-trash-alt"></i> Xóa tất cả</button>
+</div>
+
+<!-- Empty State -->
+<div class="history-empty entrance-anim stagger-2" id="historyEmpty">
+    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+    <h3>Chưa có lịch sử dự đoán</h3>
+    <p>Thực hiện phân tích khoản vay đầu tiên để bắt đầu lưu lịch sử.</p>
+    <a href="/predict-loan" class="btn btn-primary" style="margin-top: 16px;">
+        <i class="fas fa-magic"></i> Bắt đầu dự đoán
+    </a>
+</div>
+
+<!-- History Cards Grid -->
+<div class="history-grid" id="historyGrid"></div>
+
+{% endblock %}
+
+{% block head %}
+<style>
+    /* ── History Stats ── */
+    .history-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        max-width: 800px;
+        margin: 0 auto 24px;
+    }
+
+    .hstat-card {
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 16px;
+        text-align: center;
+    }
+
+    .hstat-icon {
+        font-size: 1.2rem;
+        margin-bottom: 6px;
+    }
+
+    .hstat-value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .hstat-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 2px;
+    }
+
+    /* ── Actions Bar ── */
+    .history-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1200px;
+        margin: 0 auto 20px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .history-filter {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 7px 16px;
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        background: var(--glass);
+        color: var(--text-secondary);
+        font-family: var(--font);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+        background: var(--accent-purple-dim);
+        border-color: rgba(139, 92, 246, 0.3);
+        color: var(--accent-purple);
+    }
+
+    .btn-clear-history {
+        padding: 7px 16px;
+        border-radius: 50px;
+        border: 1px solid rgba(251, 113, 133, 0.25);
+        background: rgba(251, 113, 133, 0.08);
+        color: var(--accent-rose);
+        font-family: var(--font);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-clear-history:hover {
+        background: rgba(251, 113, 133, 0.18);
+    }
+
+    /* ── Empty State ── */
+    .history-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+    }
+
+    .history-empty .empty-icon {
+        font-size: 3.5rem;
+        opacity: 0.15;
+        color: var(--accent-purple);
+        margin-bottom: 16px;
+    }
+
+    .history-empty h3 {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+
+    .history-empty p {
+        font-size: 0.9rem;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    /* ── History Grid ── */
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 18px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    @media (max-width: 480px) {
+        .history-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .history-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* ── History Card ── */
+    .history-card {
+        background: var(--glass);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        padding: 20px;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .history-card:hover {
+        border-color: rgba(139, 92, 246, 0.25);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .history-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+    }
+
+    .history-card.status-approved::before {
+        background: linear-gradient(90deg, var(--accent-emerald), #059669);
+    }
+
+    .history-card.status-pending::before {
+        background: linear-gradient(90deg, var(--accent-amber), #d97706);
+    }
+
+    .history-card.status-rejected::before {
+        background: linear-gradient(90deg, var(--accent-rose), #e11d48);
+    }
+
+    .hcard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 14px;
+    }
+
+    .hcard-status {
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .hcard-status.approved {
+        background: var(--accent-emerald-dim);
+        color: var(--accent-emerald);
+    }
+
+    .hcard-status.pending {
+        background: var(--accent-amber-dim);
+        color: var(--accent-amber);
+    }
+
+    .hcard-status.rejected {
+        background: var(--accent-rose-dim);
+        color: var(--accent-rose);
+    }
+
+    .hcard-time {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .hcard-body {
+        margin-bottom: 14px;
+    }
+
+    .hcard-risk {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .hcard-risk.low {
+        color: var(--accent-emerald);
+    }
+
+    .hcard-risk.mid {
+        color: var(--accent-amber);
+    }
+
+    .hcard-risk.high {
+        color: var(--accent-rose);
+    }
+
+    .hcard-risk-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 600;
+    }
+
+    .hcard-metrics {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .hcard-metric {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-border);
+        color: var(--text-secondary);
+    }
+
+    .hcard-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--glass-border);
+    }
+
+    .hcard-info-label {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .hcard-info-value {
+        font-size: 0.85rem;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .hcard-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+        gap: 8px;
+    }
+
+    .hcard-delete-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-family: var(--font);
+    }
+
+    .hcard-delete-btn:hover {
+        color: var(--accent-rose);
+        background: rgba(251, 113, 133, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentFilter = 'all';
+
+    async function loadHistory() {
+        const grid = document.getElementById('historyGrid');
+        const empty = document.getElementById('historyEmpty');
+        const stats = document.getElementById('historyStats');
+        const actions = document.getElementById('historyActions');
+
+        // Kiểm tra đăng nhập
+        try {
+            const authR = await fetch('/api/me');
+            const authD = await authR.json();
+            if (!authD.logged_in) {
+                empty.innerHTML = `
+                    <div class="empty-icon"><i class="fas fa-user-lock"></i></div>
+                    <h3>Vui lòng đăng nhập</h3>
+                    <p>Đăng nhập để xem lịch sử dự đoán của bạn.</p>
+                    <button class="btn btn-primary" style="margin-top: 16px;" onclick="openAuthModal()">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+                    </button>
+                `;
+                empty.style.display = 'block';
+                stats.style.display = 'none';
+                actions.style.display = 'none';
+                grid.innerHTML = '';
+                return;
+            }
+        } catch(e) { console.error('Auth check error:', e); }
+
+        // Lấy lịch sử từ server
+        try {
+            const r = await fetch('/api/history');
+            if (r.status === 401) {
+                empty.innerHTML = `
+                    <div class="empty-icon"><i class="fas fa-user-lock"></i></div>
+                    <h3>Vui lòng đăng nhập</h3>
+                    <p>Đăng nhập để xem lịch sử dự đoán của bạn.</p>
+                    <button class="btn btn-primary" style="margin-top: 16px;" onclick="openAuthModal()">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+                    </button>
+                `;
+                empty.style.display = 'block';
+                stats.style.display = 'none';
+                actions.style.display = 'none';
+                grid.innerHTML = '';
+                return;
+            }
+            const d = await r.json();
+            const history = d.history || [];
+
+            if (history.length === 0) {
+                empty.innerHTML = `
+                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                    <h3>Chưa có lịch sử dự đoán</h3>
+                    <p>Thực hiện phân tích khoản vay đầu tiên để bắt đầu lưu lịch sử.</p>
+                    <a href="/predict-loan" class="btn btn-primary" style="margin-top: 16px;">
+                        <i class="fas fa-magic"></i> Bắt đầu dự đoán
+                    </a>
+                `;
+                empty.style.display = 'block';
+                stats.style.display = 'none';
+                actions.style.display = 'none';
+                grid.innerHTML = '';
+                return;
+            }
+
+            empty.style.display = 'none';
+            stats.style.display = 'grid';
+            actions.style.display = 'flex';
+
+            // Stats
+            const approved = history.filter(h => h.prediction_code === 0).length;
+            const pending = history.filter(h => h.prediction_code === 2).length;
+            const rejected = history.filter(h => h.prediction_code === 1).length;
+            document.getElementById('totalCount').textContent = history.length;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('rejectedCount').textContent = rejected;
+
+            // Filter
+            const filtered = currentFilter === 'all' ? history : history.filter(h => String(h.prediction_code) === currentFilter);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted); grid-column: 1/-1;">Không có kết quả phù hợp với bộ lọc.</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map((entry, idx) => {
+                const code = entry.prediction_code;
+                const f = entry.formData || {};
+                const r = entry.resultData || {};
+                const statusClass = code === 0 ? 'approved' : code === 2 ? 'pending' : 'rejected';
+                const cardStatus = code === 0 ? 'status-approved' : code === 2 ? 'status-pending' : 'status-rejected';
+                const statusText = code === 0 ? '✅ Duyệt' : code === 2 ? '⚠️ Cân nhắc' : '❌ Từ chối';
+                const riskClass = code === 0 ? 'low' : code === 2 ? 'mid' : 'high';
+                const confidence = entry.confidence !== undefined ? (entry.confidence * 100).toFixed(1) : 'N/A';
+                const gender = f.CODE_GENDER === 'M' ? 'Nam' : 'Nữ';
+                const date = new Date(entry.timestamp);
+                const timeStr = date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+                const income = f.AMT_INCOME_TOTAL ? parseFloat(f.AMT_INCOME_TOTAL).toLocaleString('vi-VN') : '0';
+                const credit = f.AMT_CREDIT ? parseFloat(f.AMT_CREDIT).toLocaleString('vi-VN') : '0';
+
+                return `
+                <div class="history-card ${cardStatus} entrance-anim" style="animation-delay: ${idx * 0.05}s;">
+                    <div class="hcard-header">
+                        <span class="hcard-status ${statusClass}">${statusText}</span>
+                        <span class="hcard-time"><i class="fas fa-clock"></i> ${timeStr}</span>
+                    </div>
+                    <div class="hcard-body">
+                        <div class="hcard-risk ${riskClass}">${confidence}%</div>
+                        <div class="hcard-risk-label">Xác suất rủi ro</div>
+                        <div class="hcard-metrics">
+                            ${entry.dti !== undefined ? `<span class="hcard-metric">DTI: ${entry.dti}x</span>` : ''}
+                            ${entry.pti !== undefined ? `<span class="hcard-metric">PTI: ${entry.pti}%</span>` : ''}
+                            ${entry.sk_id_curr && entry.sk_id_curr > 0 ? `<span class="hcard-metric">ID: ${entry.sk_id_curr}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="hcard-info">
+                        <div class="hcard-info-item">
+                            <div class="hcard-info-label">Giới tính / Tuổi</div>
+                            <div class="hcard-info-value">${gender}, ${f.AGE || '?'} tuổi</div>
+                        </div>
+                        <div class="hcard-info-item">
+                            <div class="hcard-info-label">Thu nhập/năm</div>
+                            <div class="hcard-info-value">${income} ₫</div>
+                        </div>
+                        <div class="hcard-info-item">
+                            <div class="hcard-info-label">Số tiền vay</div>
+                            <div class="hcard-info-value">${credit} ₫</div>
+                        </div>
+                        <div class="hcard-info-item">
+                            <div class="hcard-info-label">Trạng thái</div>
+                            <div class="hcard-info-value">${entry.risk_status || 'N/A'}</div>
+                        </div>
+                    </div>
+                    <div class="hcard-actions">
+                        <button class="hcard-delete-btn" onclick="deleteEntry(${entry.id})"><i class="fas fa-trash"></i> Xóa</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch(e) {
+            console.error('Load history error:', e);
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:var(--accent-rose); grid-column:1/-1;"><i class="fas fa-exclamation-triangle"></i> Lỗi tải lịch sử. Vui lòng thử lại.</div>';
+        }
+    }
+
+    function filterHistory(filter, btn) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        loadHistory();
+    }
+
+    async function deleteEntry(id) {
+        try {
+            await fetch(`/api/history/${id}`, { method: 'DELETE' });
+            loadHistory();
+        } catch(e) { console.error('Delete error:', e); }
+    }
+
+    async function clearHistory() {
+        if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử dự đoán?')) return;
+        try {
+            await fetch('/api/history', { method: 'DELETE' });
+            loadHistory();
+        } catch(e) { console.error('Clear error:', e); }
+    }
+
+    // Init
+    loadHistory();
+</script>
+
+{% endblock %}

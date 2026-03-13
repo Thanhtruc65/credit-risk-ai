@@ -283,14 +283,6 @@
                     <div id="suggestList"></div>
                 </div>
 
-                <div class="fi-toggle">
-                    <button type="button" onclick="toggleFI()"><i class="fas fa-chart-bar"></i> Feature
-                        Importance</button>
-                </div>
-                <div class="fi-panel" id="fiPanel">
-                    <h3>Các yếu tố ảnh hưởng lớn nhất</h3>
-                    <div id="fiBars"></div>
-                </div>
 
                 <button type="button" class="btn btn-export" id="exportBtn" style="display: none;"
                     onclick="exportPDF()">
@@ -537,6 +529,32 @@
             }
 
             lastResult = d;
+
+            // ══ Save to prediction history (Server-side) ══
+            try {
+                const authCheck = await fetch('/api/me');
+                const authData = await authCheck.json();
+                if (authData.logged_in) {
+                    await fetch('/api/history/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            formData: { ...lastFormData },
+                            resultData: {
+                                risk_status: d.risk_status,
+                                prediction_code: d.prediction_code,
+                                confidence: d.confidence,
+                                dti: d.dti,
+                                pti: d.pti,
+                                reasons: d.reasons,
+                                suggestions: d.suggestions
+                            }
+                        })
+                    });
+                }
+            } catch (histErr) { console.warn('Could not save history:', histErr); }
+
+
             document.getElementById('noResult').style.display = 'none'; document.getElementById('resultPanel').classList.add('show');
             const st = document.getElementById('resultStatus'); st.className = 'result-status';
             st.classList.add(d.prediction_code === 0 ? 'approved' : d.prediction_code === 2 ? 'pending' : 'rejected');

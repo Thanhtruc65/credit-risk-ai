@@ -13,3 +13,8 @@ python-dotenv
 joblib
 reportlab
 pillow
+bcrypt
+gunicorn
+psycopg2-binary
+sqlalchemy
+pyodbc

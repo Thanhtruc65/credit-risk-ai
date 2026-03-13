@@ -131,6 +131,127 @@
             }
         }
 
+        /* ── SPACE BACKGROUND & ANIMATIONS ── */
+        /* Realistic Meteor / Comet */
+        .shooting-star {
+            position: fixed;
+            width: 150px;
+            height: 3px;
+            background: linear-gradient(-90deg, transparent, rgba(34, 211, 238, 0.2), rgba(255, 255, 255, 1));
+            z-index: 0;
+            pointer-events: none;
+            animation: shoot 8s infinite ease-in; /* Slower general speed */
+            transform-origin: left center;
+            opacity: 0;
+        }
+
+        .shooting-star::after {
+            content: '';
+            position: absolute;
+            left: -2px; /* Head is now on the left (front of the movement) */
+            top: -2px;
+            width: 7px;
+            height: 7px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 10px 3px rgba(34, 211, 238, 0.8), 0 0 20px 5px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes shoot {
+            0% { transform: translate(110vw, -30vh) rotate(-45deg) scale(0.5); opacity: 0; }
+            10% { opacity: 1; }
+            30% { transform: translate(20vw, 60vh) rotate(-45deg) scale(1.2); opacity: 1; filter: drop-shadow(0 0 15px #fff); }
+            45% { transform: translate(-20vw, 100vh) rotate(-45deg) scale(0.2); opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        /* Detailed SVG UFO */
+        .ufo-container {
+            position: fixed;
+            top: 20%;
+            left: -150px;
+            z-index: 1;
+            width: 100px;
+            height: 60px;
+            pointer-events: none;
+            animation: ufoFly 25s ease-in-out infinite;
+            filter: drop-shadow(0 15px 15px rgba(34, 211, 238, 0.3));
+            will-change: transform;
+        }
+
+        .ufo-svg {
+            width: 100%;
+            height: 100%;
+            animation: ufoHover 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes ufoFly {
+            0% { transform: translate(-150px, 0) rotate(10deg); opacity: 0; }
+            5% { opacity: 1; }
+            20% { transform: translate(20vw, -10vh) rotate(-5deg) scale(1.2); }
+            40% { transform: translate(45vw, 15vh) rotate(5deg) scale(1.4); filter: drop-shadow(0 20px 30px rgba(139, 92, 246, 0.6)); }
+            60% { transform: translate(65vw, -5vh) rotate(-10deg) scale(0.9); }
+            80% { transform: translate(85vw, 5vh) rotate(15deg) scale(1.1); }
+            95% { opacity: 1; }
+            100% { transform: translate(120vw, -10vh) rotate(0deg) scale(1.5); opacity: 0; }
+        }
+
+        @keyframes ufoHover {
+            0% { transform: translateY(-5px); }
+            100% { transform: translateY(5px); }
+        }
+
+        /* Alien Lasers */
+        .alien-laser {
+            position: fixed;
+            width: 80px;
+            height: 3px;
+            background: #ef4444; /* Red laser */
+            z-index: 1;
+            pointer-events: none;
+            box-shadow: 0 0 10px #ef4444, 0 0 20px #fb7185, 0 0 30px #ef4444, inset 0 0 5px #fff;
+            border-radius: 5px;
+            opacity: 0;
+        }
+
+        @keyframes laserShoot {
+            0% { opacity: 1; transform: translate(var(--start-x), var(--start-y)) rotate(var(--angle)) scaleX(0); transform-origin: left; }
+            10% { transform: translate(var(--start-x), var(--start-y)) rotate(var(--angle)) scaleX(1); opacity: 1; }
+            100% { opacity: 0; transform: translate(var(--end-x), var(--end-y)) rotate(var(--angle)) scaleX(1); }
+        }
+
+        /* ── INTERACTIVE MOUSE TRAIL ── */
+        .mouse-trail-particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 10px currentColor;
+            animation: trailFade 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes trailFade {
+            0% { transform: scale(1); opacity: 0.9; }
+            100% { transform: scale(0.1) translateY(10px); opacity: 0; }
+        }
+
+        .stat-card, .glass, .auth-form {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        
+        .stat-card:hover, .glass:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), 0 0 20px rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .btn, .nav-login-btn, .action-btn {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+        }
+
         /* ── PREMIUM UTILITIES ── */
         .fire-glow {
             position: relative;
@@ -892,91 +1013,8 @@
             line-height: 1.5;
         }
 
-        /* Component: Feature Importance */
-        .fi-toggle {
-            margin-top: 20px;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .fi-toggle button {
-            background: var(--accent-purple-dim);
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            color: #c4b5fd;
-            border-radius: 50px;
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .fi-toggle button:hover {
-            background: rgba(139, 92, 246, 0.25);
-        }
-
-        .fi-panel {
-            display: none;
-            margin-top: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-md);
-            padding: 20px;
-        }
-
-        .fi-panel.show {
-            display: block;
-        }
-
-        .fi-panel h3 {
-            font-size: 0.8rem;
-            color: var(--accent-purple);
-            text-transform: uppercase;
-            margin-bottom: 14px;
-        }
-
-        .bar-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .bar-name {
-            min-width: 130px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-align: right;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .bar-track {
-            flex: 1;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50px;
-            overflow: hidden;
-        }
-
-        .bar-fill {
-            height: 100%;
-            border-radius: 50px;
-            background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
-            width: 0;
-            transition: width 0.8s ease;
-        }
-
-        .bar-pct {
-            min-width: 40px;
-            font-size: 0.72rem;
-            color: var(--accent-purple);
-            text-align: right;
-            font-weight: 600;
-        }
-
         /* ── CHATBOT ── */
+        /* Make chatBubble draggable */
         #chatBubble {
             position: fixed;
             bottom: 30px;
@@ -986,7 +1024,7 @@
             border-radius: 50%;
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
             border: none;
-            cursor: pointer;
+            cursor: grab;
             box-shadow: 0 6px 28px rgba(139, 92, 246, 0.5);
             font-size: 1.5rem;
             display: flex;
@@ -994,15 +1032,23 @@
             justify-content: center;
             z-index: 1000;
             color: white;
-            transition: transform 0.3s;
+            transition: transform 0.2s, background 0.3s;
+            user-select: none;
+            /* Prevent text selection while dragging */
+        }
+
+        #chatBubble:active {
+            cursor: grabbing;
+            transform: scale(0.95);
         }
 
         #chatBubble:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         #chatPanel {
             position: fixed;
+            /* Initial position relative to the initial bubble position */
             bottom: 100px;
             right: 30px;
             width: 400px;
@@ -1174,12 +1220,302 @@
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
         }
+
+        /* ── LOGIN BUTTON (Navbar) ── */
+        .nav-login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-family: var(--font);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
+            margin-left: 12px;
+        }
+
+        .nav-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
+        }
+
+        /* ── AUTH MODAL (Overlay + Centered Box) ── */
+        .auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .auth-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .auth-modal {
+            width: 400px;
+            max-width: 92vw;
+            background: rgba(17, 17, 39, 0.97);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px 28px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7), 0 0 80px rgba(139, 92, 246, 0.12);
+            position: relative;
+            animation: modalFadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .auth-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .auth-modal-close:hover {
+            color: var(--accent-rose);
+        }
+
+        .auth-modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .auth-modal-header .auth-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--accent-purple);
+            margin-bottom: 14px;
+        }
+
+        .auth-modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .auth-modal-header p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .auth-field {
+            margin-bottom: 16px;
+        }
+
+        .auth-field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .auth-field label i {
+            color: var(--accent-purple);
+            margin-right: 6px;
+        }
+
+        .auth-field input {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: var(--font);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .auth-field input:focus {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.06);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
+            margin-top: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+        }
+
+        .auth-footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .auth-footer a:hover {
+            color: #c084fc;
+        }
+
+        .auth-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 16px;
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: var(--text-secondary);
+            font-family: var(--font);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .auth-back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Toggle between login/register forms */
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
     </style>
 
     {% block head %}{% endblock %}
 </head>
 
 <body>
+    <!-- Space Animations -->
+    <div class="ufo-container">
+        <!-- Realistic glowing UFO SVG -->
+        <svg class="ufo-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- Tractor beam aura -->
+            <path d="M70 80 L20 200 L180 200 L130 80 Z" fill="url(#beamGrad)" opacity="0.4">
+                <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2s" repeatCount="indefinite" />
+            </path>
+            <!-- Dome -->
+            <path d="M60 50 Q100 0 140 50 Z" fill="url(#domeGrad)" />
+            <path d="M70 50 Q100 15 130 50 Z" fill="rgba(255,255,255,0.3)" />
+            <!-- Alien shape inside dome -->
+            <circle cx="100" cy="40" r="12" fill="#22c55e" />
+            <ellipse cx="95" cy="38" rx="4" ry="2" fill="#000" transform="rotate(-15 95 38)"/>
+            <ellipse cx="105" cy="38" rx="4" ry="2" fill="#000" transform="rotate(15 105 38)"/>
+            <!-- Main Hull -->
+            <ellipse cx="100" cy="65" rx="80" ry="20" fill="url(#hullGrad)" />
+            <ellipse cx="100" cy="63" rx="76" ry="18" fill="rgba(255,255,255,0.1)" />
+            <!-- Lights bottom -->
+            <circle cx="40" cy="65" r="4" fill="#22d3ee"><animate attributeName="fill" values="#22d3ee;#8b5cf6;#22d3ee" dur="1s" repeatCount="indefinite"/></circle>
+            <circle cx="70" cy="72" r="5" fill="#facc15"><animate attributeName="fill" values="#facc15;#fb7185;#facc15" dur="0.8s" repeatCount="indefinite"/></circle>
+            <circle cx="100" cy="75" r="6" fill="#34d399"><animate attributeName="fill" values="#34d399;#22d3ee;#34d399" dur="1.2s" repeatCount="indefinite"/></circle>
+            <circle cx="130" cy="72" r="5" fill="#fb7185"><animate attributeName="fill" values="#fb7185;#facc15;#fb7185" dur="0.9s" repeatCount="indefinite"/></circle>
+            <circle cx="160" cy="65" r="4" fill="#8b5cf6"><animate attributeName="fill" values="#8b5cf6;#22d3ee;#8b5cf6" dur="1.1s" repeatCount="indefinite"/></circle>
+            
+            <defs>
+                <linearGradient id="domeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#a5f3fc" stop-opacity="0.8"/>
+                    <stop offset="100%" stop-color="#0891b2" stop-opacity="0.9"/>
+                </linearGradient>
+                <linearGradient id="hullGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#94a3b8"/>
+                    <stop offset="50%" stop-color="#475569"/>
+                    <stop offset="100%" stop-color="#1e293b"/>
+                </linearGradient>
+                <linearGradient id="beamGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#34d399" stop-opacity="0.8"/>
+                    <stop offset="100%" stop-color="#34d399" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+
     <!-- Animated Background -->
     <div class="bg-mesh"></div>
     <div class="particles" id="particles"></div>
@@ -1196,8 +1532,25 @@
                     class="fas fa-chart-pie"></i> Thống Kê</a>
             <a href="/predict-loan" class="{% if active_page == 'predict' %}active{% endif %}"><i
                     class="fas fa-magic"></i> Dự Đoán vay</a>
-            <a href="/docs-api" class="{% if active_page == 'docs' %}active{% endif %}"><i class="fas fa-book"></i> Tài
-                Liệu</a>
+            <a href="/history" class="{% if active_page == 'history' %}active{% endif %}"><i class="fas fa-history"></i>
+                Lịch Sử</a>
+            <a href="/about" class="{% if active_page == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i> Giới
+                Thiệu</a>
+        </div>
+        <!-- Login Button / User Info -->
+        <div id="authArea">
+            <button class="nav-login-btn" id="loginBtn" onclick="openAuthModal()">
+                <i class="fas fa-user-circle"></i> Đăng nhập
+            </button>
+            <div id="userInfo" style="display:none; align-items:center; gap:10px;">
+                <span style="color:var(--text-primary); font-size:0.88rem; font-weight:600;">
+                    <i class="fas fa-user-circle" style="color:var(--accent-purple); margin-right:4px;"></i>
+                    <span id="userDisplayName"></span>
+                </span>
+                <button class="nav-login-btn" onclick="handleLogout()" style="padding:6px 14px; font-size:0.82rem;">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -1225,12 +1578,169 @@
 
     {% block scripts %}{% endblock %}
 
+    <!-- ══ AUTH MODAL ══ -->
+    <div class="auth-overlay" id="authOverlay" onclick="if(event.target===this)closeAuthModal()">
+        <div class="auth-modal">
+            <button class="auth-modal-close" onclick="closeAuthModal()" title="Đóng"><i
+                    class="fas fa-times"></i></button>
+
+            <!-- ═══ LOGIN FORM ═══ -->
+            <div class="auth-form active" id="loginForm">
+                <div class="auth-modal-header">
+                    <div class="auth-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Đăng nhập hệ thống</h3>
+                    <p>Nhập thông tin tài khoản của bạn</p>
+                </div>
+                <form onsubmit="handleLogin(event)">
+                    <div class="auth-field">
+                        <label><i class="fas fa-user"></i> Tên đăng nhập</label>
+                        <input type="text" id="loginUser" placeholder="Nhập tên đăng nhập..." required>
+                    </div>
+                    <div class="auth-field">
+                        <label><i class="fas fa-key"></i> Mật khẩu</label>
+                        <input type="password" id="loginPass" placeholder="Nhập mật khẩu..." required>
+                    </div>
+                    <button type="submit" class="auth-submit-btn">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </button>
+                </form>
+                <div class="auth-footer" style="margin-top:10px;">
+                    <a onclick="switchAuthForm('forgot')" style="font-size:0.82rem; cursor:pointer;"><i class="fas fa-unlock-alt" style="margin-right:4px;"></i>Quên mật khẩu?</a>
+                </div>
+                <div class="auth-divider">hoặc</div>
+                <div class="auth-footer" style="margin-top:0;">
+                    Chưa có tài khoản? <a onclick="switchAuthForm('register')">Đăng ký ngay</a>
+                </div>
+                <div style="text-align:center">
+                    <a href="/" class="auth-back-btn"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a>
+                </div>
+            </div>
+
+            <!-- ═══ REGISTER FORM ═══ -->
+            <div class="auth-form" id="registerForm">
+                <div class="auth-modal-header">
+                    <div class="auth-icon"><i class="fas fa-user-plus"></i></div>
+                    <h3>Tạo tài khoản mới</h3>
+                    <p>Đăng ký để sử dụng hệ thống AI Loan Predictor</p>
+                </div>
+                <form onsubmit="handleRegister(event)">
+                    <div class="auth-field">
+                        <label><i class="fas fa-user"></i> Họ và tên</label>
+                        <input type="text" id="regName" placeholder="Nhập họ và tên..." required>
+                    </div>
+                    <div class="auth-field">
+                        <label><i class="fas fa-id-badge"></i> Tên đăng nhập</label>
+                        <input type="text" id="regUsername" placeholder="Nhập tên đăng nhập..." required>
+                    </div>
+                    <div class="auth-field">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="regEmail" placeholder="Nhập email..." required>
+                    </div>
+                    <div class="auth-field">
+                        <label><i class="fas fa-key"></i> Mật khẩu</label>
+                        <input type="password" id="regPass" placeholder="Tạo mật khẩu..." required>
+                    </div>
+                    <div class="auth-field">
+                        <label><i class="fas fa-check-double"></i> Xác nhận mật khẩu</label>
+                        <input type="password" id="regPassConfirm" placeholder="Nhập lại mật khẩu..." required>
+                    </div>
+                    <button type="submit" class="auth-submit-btn">
+                        <i class="fas fa-user-plus"></i> Đăng ký
+                    </button>
+                </form>
+                <div class="auth-footer">
+                    Đã có tài khoản? <a onclick="switchAuthForm('login')">Đăng nhập ngay</a>
+                </div>
+                <div style="text-align:center">
+                    <a href="/" class="auth-back-btn"><i class="fas fa-arrow-left"></i> Quay lại trang chủ</a>
+                </div>
+            </div>
+
+            <!-- ═══ FORGOT PASSWORD FORM (3-step OTP) ═══ -->
+            <div class="auth-form" id="forgotForm">
+                <div class="auth-modal-header">
+                    <div class="auth-icon"><i class="fas fa-unlock-alt"></i></div>
+                    <h3>Quên mật khẩu</h3>
+                    <p id="forgotDesc">Nhập email để nhận mã xác nhận OTP</p>
+                </div>
+
+                <!-- Step 1: Nhập email -->
+                <div id="forgotStep1">
+                    <form onsubmit="handleSendOtp(event)">
+                        <div class="auth-field">
+                            <label><i class="fas fa-envelope"></i> Email đã đăng ký</label>
+                            <input type="email" id="forgotEmail" placeholder="Nhập email..." required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="sendOtpBtn">
+                            <i class="fas fa-paper-plane"></i> Gửi mã OTP
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Step 2: Nhập OTP -->
+                <div id="forgotStep2" style="display:none;">
+                    <form onsubmit="handleCheckOtp(event)">
+                        <div class="auth-field">
+                            <label><i class="fas fa-shield-alt"></i> Mã OTP (6 chữ số)</label>
+                            <input type="text" id="forgotOtp" placeholder="Nhập mã OTP..." maxlength="6" pattern="[0-9]{6}" required
+                                style="text-align:center; font-size:1.4rem; font-weight:800; letter-spacing:8px; color:var(--accent-purple);">
+                            <small id="otpTimer" style="color:var(--accent-amber); margin-top:6px; display:block;"></small>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="checkOtpBtn">
+                            <i class="fas fa-check-circle"></i> Xác nhận mã OTP
+                        </button>
+                    </form>
+                    <div style="text-align:center; margin-top:12px;">
+                        <a id="resendOtpLink" onclick="handleResendOtp()" style="color:var(--text-muted); font-size:0.82rem; cursor:pointer;">
+                            <i class="fas fa-redo"></i> Gửi lại mã OTP
+                        </a>
+                        <small id="resendCooldown" style="display:none; color:var(--accent-amber); margin-left:6px;"></small>
+                    </div>
+                </div>
+
+                <!-- Step 3: Đặt mật khẩu mới (chỉ hiện sau khi OTP đúng) -->
+                <div id="forgotStep3" style="display:none;">
+                    <div style="text-align:center; margin-bottom:16px; padding:12px; background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.3); border-radius:10px;">
+                        <i class="fas fa-check-circle" style="color:var(--accent-emerald); font-size:1.2rem;"></i>
+                        <span style="color:var(--accent-emerald); font-weight:600; margin-left:6px;">Mã OTP hợp lệ!</span>
+                    </div>
+                    <form onsubmit="handleResetPassword(event)">
+                        <div class="auth-field">
+                            <label><i class="fas fa-key"></i> Mật khẩu mới</label>
+                            <input type="password" id="forgotNewPass" placeholder="Nhập mật khẩu mới..." required>
+                        </div>
+                        <div class="auth-field">
+                            <label><i class="fas fa-check-double"></i> Xác nhận mật khẩu mới</label>
+                            <input type="password" id="forgotNewPassConfirm" placeholder="Nhập lại mật khẩu mới..." required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn" id="resetPassBtn">
+                            <i class="fas fa-save"></i> Đặt lại mật khẩu
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-footer">
+                    <a onclick="switchAuthForm('login')"><i class="fas fa-arrow-left" style="margin-right:4px;"></i>Quay lại đăng nhập</a>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ══ CHATBOT GLOBAL ══ -->
     <button id="chatBubble" onclick="toggleChat()" title="AI Assistant"><i class="fas fa-comment-dots"></i></button>
     <div id="chatPanel">
-        <div class="chat-header"><span><i class="fas fa-robot"></i> Trợ Lý Sinh Viên Tài Chính AI</span><button
-                onclick="toggleChat()" style="background:none;border:none;color:white;cursor:pointer;"><i
-                    class="fas fa-times"></i></button></div>
+        <div class="chat-header">
+            <span><i class="fas fa-robot"></i> Trợ Lý Sinh Viên Tài Chính AI</span>
+            <div>
+                <button onclick="clearChat()" style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;margin-right:12px;font-size:1rem;" title="Xóa lịch sử trò chuyện">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button onclick="toggleChat()" style="background:none;border:none;color:white;cursor:pointer;font-size:1.1rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
         <div class="chat-body" id="chatBody">
             <div class="chat-msg bot">Xin chào! Tôi là trợ lý AI tích hợp. Bạn có câu hỏi nào về hồ sơ vay vốn, chỉ số
                 tài chính (DTI/PTI), hay mô hình XGBoost không?</div>
@@ -1248,8 +1758,321 @@
     </div>
 
     <script>
+        // ══ Auth State ══
+        let currentUser = null;
+
+        async function checkAuth() {
+            try {
+                const r = await fetch('/api/me');
+                const d = await r.json();
+                if (d.logged_in) {
+                    currentUser = d.user;
+                    document.getElementById('loginBtn').style.display = 'none';
+                    document.getElementById('userInfo').style.display = 'flex';
+                    document.getElementById('userDisplayName').textContent = d.user.full_name;
+                } else {
+                    currentUser = null;
+                    document.getElementById('loginBtn').style.display = 'inline-flex';
+                    document.getElementById('userInfo').style.display = 'none';
+                }
+            } catch(e) { console.error('Auth check failed:', e); }
+        }
+
+        // Auth Modal Script
+        function openAuthModal() {
+            const overlay = document.getElementById('authOverlay');
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => { overlay.classList.add('open'); });
+        }
+        function closeAuthModal() {
+            const overlay = document.getElementById('authOverlay');
+            overlay.classList.remove('open');
+            setTimeout(() => { overlay.style.display = 'none'; resetAllForms(); }, 350);
+        }
+        function switchAuthForm(target) {
+            resetAllForms();
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('registerForm').classList.remove('active');
+            document.getElementById('forgotForm').classList.remove('active');
+            document.getElementById(target + 'Form').classList.add('active');
+        }
+
+        function resetAllForms() {
+            document.querySelectorAll('.auth-modal input').forEach(i => { i.value = ''; });
+            const s1 = document.getElementById('forgotStep1');
+            const s2 = document.getElementById('forgotStep2');
+            const s3 = document.getElementById('forgotStep3');
+            if (s1) s1.style.display = 'block';
+            if (s2) s2.style.display = 'none';
+            if (s3) s3.style.display = 'none';
+            const desc = document.getElementById('forgotDesc');
+            if (desc) desc.textContent = 'Nhập email để nhận mã xác nhận OTP';
+            if (otpCountdown) { clearInterval(otpCountdown); otpCountdown = null; }
+            if (resendTimer) { clearInterval(resendTimer); resendTimer = null; }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value;
+            const password = document.getElementById('loginPass').value;
+            const btn = e.target.querySelector('.auth-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+            try {
+                const r = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, password })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    closeAuthModal();
+                    await checkAuth();
+                    showToast(d.message, 'success');
+                } else {
+                    showToast(d.detail || 'Đăng nhập thất bại!', 'error');
+                }
+            } catch(err) {
+                showToast('Lỗi kết nối server!', 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Đăng nhập';
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const full_name = document.getElementById('regName').value;
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPass').value;
+            const passConfirm = document.getElementById('regPassConfirm').value;
+            if (password !== passConfirm) { showToast('Mật khẩu xác nhận không khớp!', 'error'); return; }
+            if (password.length < 4) { showToast('Mật khẩu phải ít nhất 4 ký tự!', 'error'); return; }
+            if (username.length < 3) { showToast('Tên đăng nhập phải ít nhất 3 ký tự!', 'error'); return; }
+            const btn = e.target.querySelector('.auth-submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+            try {
+                const r = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ username, email, full_name, password })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    showToast(d.message, 'success');
+                    switchAuthForm('login');
+                    document.getElementById('loginUser').value = username;
+                } else {
+                    showToast(d.detail || 'Đăng ký thất bại!', 'error');
+                }
+            } catch(err) {
+                showToast('Lỗi kết nối server!', 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> Đăng ký';
+        }
+
+        // ══ OTP Forgot Password (3-step) ══
+        let forgotEmailStored = '';
+        let forgotOtpStored = '';
+        let otpCountdown = null;
+        let resendTimer = null;
+        let resendCooldownSeconds = 0;
+
+        function startOtpTimer() {
+            let seconds = 600;
+            const el = document.getElementById('otpTimer');
+            if (otpCountdown) clearInterval(otpCountdown);
+            otpCountdown = setInterval(() => {
+                seconds--;
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                el.textContent = `Mã còn hiệu lực: ${m}:${s.toString().padStart(2,'0')}`;
+                el.style.color = 'var(--accent-amber)';
+                if (seconds <= 0) {
+                    clearInterval(otpCountdown);
+                    el.textContent = 'Mã OTP đã hết hạn. Vui lòng gửi lại.';
+                    el.style.color = 'var(--accent-rose)';
+                }
+            }, 1000);
+        }
+
+        function startResendCooldown() {
+            resendCooldownSeconds = 60;
+            const link = document.getElementById('resendOtpLink');
+            const cdEl = document.getElementById('resendCooldown');
+            link.style.pointerEvents = 'none';
+            link.style.opacity = '0.4';
+            cdEl.style.display = 'inline';
+            if (resendTimer) clearInterval(resendTimer);
+            resendTimer = setInterval(() => {
+                resendCooldownSeconds--;
+                cdEl.textContent = `(${resendCooldownSeconds}s)`;
+                if (resendCooldownSeconds <= 0) {
+                    clearInterval(resendTimer);
+                    resendTimer = null;
+                    link.style.pointerEvents = '';
+                    link.style.opacity = '';
+                    cdEl.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        async function handleSendOtp(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang gửi...';
+            try {
+                const r = await fetch('/api/forgot-password/send-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    forgotEmailStored = email;
+                    showToast(d.message, 'success');
+                    document.getElementById('forgotStep1').style.display = 'none';
+                    document.getElementById('forgotStep2').style.display = 'block';
+                    document.getElementById('forgotDesc').textContent = `Nhập mã OTP đã gửi tới ${email}`;
+                    startOtpTimer();
+                    startResendCooldown();
+                    document.getElementById('forgotOtp').focus();
+                } else {
+                    showToast(d.detail || 'Không thể gửi OTP!', 'error');
+                }
+            } catch(err) {
+                showToast('Lỗi kết nối server!', 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi mã OTP';
+        }
+
+        async function handleCheckOtp(e) {
+            e.preventDefault();
+            const otp = document.getElementById('forgotOtp').value;
+            const btn = document.getElementById('checkOtpBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang kiểm tra...';
+            try {
+                const r = await fetch('/api/forgot-password/check-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: forgotEmailStored, otp })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    forgotOtpStored = otp;
+                    showToast(d.message, 'success');
+                    document.getElementById('forgotStep2').style.display = 'none';
+                    document.getElementById('forgotStep3').style.display = 'block';
+                    document.getElementById('forgotDesc').textContent = 'Nhập mật khẩu mới của bạn';
+                    document.getElementById('forgotNewPass').focus();
+                } else {
+                    showToast(d.detail || 'Mã OTP không đúng!', 'error');
+                }
+            } catch(err) {
+                showToast('Lỗi kết nối server!', 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Xác nhận mã OTP';
+        }
+
+        async function handleResetPassword(e) {
+            e.preventDefault();
+            const newPass = document.getElementById('forgotNewPass').value;
+            const newPassConfirm = document.getElementById('forgotNewPassConfirm').value;
+            if (newPass !== newPassConfirm) { showToast('Mật khẩu xác nhận không khớp!', 'error'); return; }
+            if (newPass.length < 4) { showToast('Mật khẩu phải ít nhất 4 ký tự!', 'error'); return; }
+            const btn = document.getElementById('resetPassBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+            try {
+                const r = await fetch('/api/forgot-password/verify-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: forgotEmailStored, otp: forgotOtpStored, new_password: newPass })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    showToast(d.message, 'success');
+                    if (otpCountdown) clearInterval(otpCountdown);
+                    switchAuthForm('login');
+                } else {
+                    showToast(d.detail || 'Đặt lại mật khẩu thất bại!', 'error');
+                }
+            } catch(err) {
+                showToast('Lỗi kết nối server!', 'error');
+            }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Đặt lại mật khẩu';
+        }
+
+        async function handleResendOtp() {
+            if (!forgotEmailStored || resendCooldownSeconds > 0) return;
+            const link = document.getElementById('resendOtpLink');
+            link.style.pointerEvents = 'none'; link.style.opacity = '0.4';
+            try {
+                const r = await fetch('/api/forgot-password/send-otp', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: forgotEmailStored })
+                });
+                const d = await r.json();
+                if (r.ok && d.success) {
+                    showToast('Đã gửi lại mã OTP!', 'success');
+                    startOtpTimer();
+                    startResendCooldown();
+                } else {
+                    showToast(d.detail || 'Không thể gửi lại!', 'error');
+                    link.style.pointerEvents = ''; link.style.opacity = '';
+                }
+            } catch(err) {
+                showToast('Lỗi!', 'error');
+                link.style.pointerEvents = ''; link.style.opacity = '';
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                currentUser = null;
+                await checkAuth();
+                showToast('Đã đăng xuất thành công.', 'success');
+                if (window.location.pathname === '/history') {
+                    window.location.reload();
+                }
+            } catch(e) { console.error('Logout error:', e); }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const existing = document.getElementById('authToast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'authToast';
+            const bg = type === 'success' ? 'var(--accent-emerald)' : type === 'error' ? 'var(--accent-rose)' : 'var(--accent-purple)';
+            toast.style.cssText = `position:fixed;top:20px;right:20px;z-index:99999;padding:14px 24px;border-radius:12px;background:${bg};color:white;font-size:0.9rem;font-weight:600;font-family:var(--font);box-shadow:0 8px 32px rgba(0,0,0,0.3);animation:slideUp 0.3s ease;max-width:400px;`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeAuthModal();
+        });
+
+        // Check auth on page load
+        checkAuth();
+
         // Global Chatbot Script
-        function toggleChat() { document.getElementById('chatPanel').classList.toggle('open'); }
+        function toggleChat() { 
+            document.getElementById('chatPanel').classList.toggle('open'); 
+        }
         function quickAsk(q) { document.getElementById('chatInput').value = q; sendChat(); }
         async function sendChat() {
             const v = document.getElementById('chatInput').value.trim(); if (!v) return; document.getElementById('chatInput').value = '';
@@ -1270,7 +2093,289 @@
         }
         function showTyp() { const b = document.getElementById('chatBody'), d = document.createElement('div'), id = 't-' + Date.now(); d.id = id; d.className = 'typing'; d.innerHTML = '<div class="dot"></div><div class="dot"></div><div class="dot"></div>'; b.appendChild(d); b.scrollTop = b.scrollHeight; return id; }
         function hideTyp(id) { const e = document.getElementById(id); if (e) e.remove(); }
-        function addMsg(t, r) { const b = document.getElementById('chatBody'), d = document.createElement('div'); d.className = `chat-msg ${r}`; d.innerHTML = r === 'bot' ? t.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') : t; b.appendChild(d); b.scrollTop = b.scrollHeight; }
+        function addMsg(t, r) { 
+            const b = document.getElementById('chatBody'), d = document.createElement('div'); 
+            d.className = `chat-msg ${r}`; 
+            d.innerHTML = r === 'bot' ? t.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') : t; 
+            b.appendChild(d); 
+            b.scrollTop = b.scrollHeight; 
+            // Save to localStorage
+            localStorage.setItem('chat_history', b.innerHTML);
+        }
+        
+        function clearChat() {
+            const b = document.getElementById('chatBody');
+            b.innerHTML = '<div class="chat-msg bot">Xin chào! Tôi là trợ lý AI tích hợp. Bạn có câu hỏi nào về hồ sơ vay vốn, chỉ số tài chính (DTI/PTI), hay mô hình XGBoost không?</div>';
+            localStorage.setItem('chat_history', b.innerHTML);
+        }
+        
+        // Restore chat history on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedHistory = localStorage.getItem('chat_history');
+            if (savedHistory) {
+                const b = document.getElementById('chatBody');
+                b.innerHTML = savedHistory;
+                b.scrollTop = b.scrollHeight;
+            }
+        });
+
+        // ── CHATBOT DRAG FUNCTIONALITY ──
+        const chatBubble = document.getElementById('chatBubble');
+        const chatPanel = document.getElementById('chatPanel');
+        
+        let isDragging = false;
+        let startX, startY;
+        let initialLeft, initialTop;
+        let wasDragged = false; // to prevent click event if dragging
+        
+        if (chatBubble) {
+            chatBubble.addEventListener('mousedown', dragStart);
+            chatBubble.addEventListener('touchstart', dragStart, {passive: false});
+            
+            // Apply saved position on load
+            const savedPos = localStorage.getItem('chatbot_position');
+            if (savedPos) {
+                try {
+                    const pos = JSON.parse(savedPos);
+                    
+                    // Simple boundary check to ensure it's not off-screen after resize
+                    const x = Math.min(Math.max(0, pos.x), window.innerWidth - 60);
+                    const y = Math.min(Math.max(0, pos.y), window.innerHeight - 60);
+                    
+                    chatBubble.style.right = 'auto';
+                    chatBubble.style.bottom = 'auto';
+                    chatBubble.style.left = `${x}px`;
+                    chatBubble.style.top = `${y}px`;
+                    
+                    // Also position the panel
+                    let panelY = y - chatPanel.offsetHeight - 15;
+                    if(panelY < 0) panelY = y + 60 + 15;
+                    let panelX = x - chatPanel.offsetWidth + 60;
+                    if(panelX < 0) panelX = x;
+                    
+                    chatPanel.style.right = 'auto';
+                    chatPanel.style.bottom = 'auto';
+                    chatPanel.style.top = `${panelY}px`;
+                    chatPanel.style.left = `${panelX}px`;
+                } catch(e) {}
+            }
+        }
+        
+        function dragStart(e) {
+            if (e.type === "touchstart") {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            } else {
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        
+            // Get current style position
+            const style = window.getComputedStyle(chatBubble);
+            initialLeft = parseInt(style.left) || chatBubble.getBoundingClientRect().left;
+            initialTop = parseInt(style.top) || chatBubble.getBoundingClientRect().top;
+            
+            isDragging = true;
+            wasDragged = false;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('touchend', dragEnd);
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            let clientX, clientY;
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+            
+            // Mark as dragged if moved more than 5px
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                wasDragged = true;
+            }
+            
+            // Calculate new position bounded by window
+            let newX = initialLeft + dx;
+            let newY = initialTop + dy;
+            
+            // Boundary checks
+            const rect = chatBubble.getBoundingClientRect();
+            if(newX < 0) newX = 0;
+            if(newY < 0) newY = 0;
+            if(newX + rect.width > window.innerWidth) newX = window.innerWidth - rect.width;
+            if(newY + rect.height > window.innerHeight) newY = window.innerHeight - rect.height;
+            
+            // Override right/bottom CSS so custom positioning works 
+            chatBubble.style.right = 'auto';
+            chatBubble.style.bottom = 'auto';
+            chatBubble.style.left = `${newX}px`;
+            chatBubble.style.top = `${newY}px`;
+            
+            // Also move the chat panel relative to the new bubble position
+            // Keep it slightly above the bubble and align right if possible
+            chatPanel.style.right = 'auto';
+            chatPanel.style.bottom = 'auto';
+            
+            let panelNewY = newY - chatPanel.offsetHeight - 15;
+            // If panel goes above screen, push it below bubble instead
+            if(panelNewY < 0) {
+                panelNewY = newY + rect.height + 15;
+            }
+            
+            let panelNewX = newX - chatPanel.offsetWidth + rect.width;
+            // If panel goes off-left, align it to the left side of the bubble instead
+            if(panelNewX < 0) {
+                panelNewX = newX;
+            }
+            
+            chatPanel.style.top = `${panelNewY}px`;
+            chatPanel.style.left = `${panelNewX}px`;
+        }
+        
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', dragEnd);
+            document.removeEventListener('touchmove', drag);
+            document.removeEventListener('touchend', dragEnd);
+            
+            // Save final position to localStorage
+            if (wasDragged) {
+                const rect = chatBubble.getBoundingClientRect();
+                localStorage.setItem('chatbot_position', JSON.stringify({
+                    x: rect.left,
+                    y: rect.top
+                }));
+            }
+        }
+        
+        // Custom click handler to avoid triggering when finishing a drag
+        if (chatBubble) {
+            // Remove the inline onclick from html if it exists, let's bind it here
+            chatBubble.removeAttribute("onclick");
+            chatBubble.addEventListener('click', function(e) {
+                if(wasDragged) {
+                    e.preventDefault();
+                    return;
+                }
+                toggleChat();
+            });
+        }
+        
+
+        // ── PREMIUM MOUSE TRAIL & EFFECTS ──
+        let lastTrailX = 0, lastTrailY = 0;
+        document.addEventListener('mousemove', e => {
+            // Drop mouse trail particles
+            const dx = e.clientX - lastTrailX;
+            const dy = e.clientY - lastTrailY;
+            
+            // Only drop a particle if mouse moved enough to avoid clutter
+            if (Math.abs(dx) > 12 || Math.abs(dy) > 12) {
+                const particle = document.createElement('div');
+                particle.className = 'mouse-trail-particle';
+                particle.style.left = (e.clientX - 4) + 'px';
+                particle.style.top = (e.clientY - 4) + 'px';
+                
+                // Randomly alternate between purple and cyan theme colors
+                const colors = ['var(--accent-cyan)', 'var(--accent-purple)', 'var(--accent-emerald)'];
+                particle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.background = particle.style.color;
+                
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 600);
+                
+                lastTrailX = e.clientX;
+                lastTrailY = e.clientY;
+            }
+        });
+
+        // Generate Random Realistic Shooting Stars (Meteors)
+        function createMeteors() {
+            // Reduced meteor count for calmer atmosphere
+            for(let i=0; i<4; i++) {
+                const star = document.createElement('div');
+                star.className = 'shooting-star';
+                star.style.animationDelay = (Math.random() * 20) + 's'; // Spaced out more
+                star.style.animationDuration = (4 + Math.random() * 5) + 's'; // Slower transit
+                star.style.top = (Math.random() * 80 - 30) + 'vh'; 
+                
+                // Randomly scale some meteors to look closer/further
+                const scale = 0.5 + Math.random() * 1.5;
+                if(scale > 1.2) {
+                    star.style.zIndex = "2"; // bring some in front of bg
+                    star.style.filter = "drop-shadow(0 0 12px rgba(255,255,255,1))";
+                }
+                document.body.appendChild(star);
+            }
+        }
+        createMeteors();
+
+        // Alien Lasers
+        function fireLaser() {
+            const laser = document.createElement('div');
+            laser.className = 'alien-laser';
+            
+            // Random start and end positions, ensuring it crosses the screen diagonally
+            const startX = Math.random() > 0.5 ? -100 : window.innerWidth + 100;
+            const startY = Math.random() * window.innerHeight;
+            const endX = startX < 0 ? window.innerWidth + 100 : -100;
+            const endY = startY + (Math.random() * 600 - 300);
+            
+            // Calculate angle
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            
+            laser.style.setProperty('--start-x', `${startX}px`);
+            laser.style.setProperty('--start-y', `${startY}px`);
+            laser.style.setProperty('--end-x', `${endX}px`);
+            laser.style.setProperty('--end-y', `${endY}px`);
+            laser.style.setProperty('--angle', `${angle}deg`);
+            
+            // Slightly slower laser speed to match calmer atmosphere
+            const duration = 0.8 + Math.random() * 0.5; 
+            laser.style.animation = `laserShoot ${duration}s ease-in forwards`;
+            
+            // Alternating laser colors (Red/Green/Purple)
+            const colors = ['#ef4444', '#10b981', '#a855f7'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            laser.style.background = color;
+            laser.style.boxShadow = `0 0 10px ${color}, 0 0 20px ${color}, inset 0 0 5px #fff`;
+            
+            document.body.appendChild(laser);
+            
+            setTimeout(() => { laser.remove(); }, duration * 1000);
+            
+            // Slower laser frequency (10 to 30 seconds interval)
+            setTimeout(fireLaser, 10000 + Math.random() * 20000);
+        }
+        
+        // Start firing lasers after a small delay
+        setTimeout(fireLaser, 10000);
+
+        // Magnetic Hover Effect for Buttons
+        document.querySelectorAll('.nav-login-btn, .btn-primary, .action-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px) scale(1.05)`;
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = `translate(0px, 0px) scale(1)`;
+            });
+        });
     </script>
 </body>
 
