@@ -6,15 +6,14 @@ env/
 venv/
 .env
 .venv
-build/
-dist/
 
-# Project specific
+# Chặn toàn bộ file dữ liệu nặng
 data/*.csv
-models/*.pkl
-*.log
 
-# Sensitive info
+# Chỉ cho phép file models (bộ não AI)
+!models/*.pkl
+
+*.log
 .gemini/
 .agents/
 brain/
