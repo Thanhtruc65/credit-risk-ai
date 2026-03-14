@@ -49,7 +49,7 @@ try:
         print("   ✅ Bảng Users — OK!")
 
         # ── 2. Tạo bảng PredictionHistory ──
-        print("[2/2] Đang tạo bảng PredictionHistory...")
+        print("[2/3] Đang tạo bảng PredictionHistory...")
         conn.execute(sqlalchemy.text("""
             CREATE TABLE IF NOT EXISTS PredictionHistory (
                 id SERIAL PRIMARY KEY,
@@ -67,6 +67,31 @@ try:
         """))
         conn.commit()
         print("   ✅ Bảng PredictionHistory — OK!")
+
+        # ── 3. Tạo bảng Clients (Để Dashboard không bị lỗi) ──
+        print("[3/3] Đang tạo bảng Clients (Dữ liệu mẫu)...")
+        conn.execute(sqlalchemy.text("""
+            CREATE TABLE IF NOT EXISTS Clients (
+                SK_ID_CURR INT PRIMARY KEY,
+                TARGET INT,
+                NAME_CONTRACT_TYPE VARCHAR(50),
+                CODE_GENDER VARCHAR(5),
+                FLAG_OWN_CAR VARCHAR(5),
+                FLAG_OWN_REALTY VARCHAR(5),
+                AMT_INCOME_TOTAL FLOAT,
+                AMT_CREDIT FLOAT,
+                AMT_ANNUITY FLOAT,
+                NAME_EDUCATION_TYPE VARCHAR(100),
+                NAME_FAMILY_STATUS VARCHAR(100),
+                NAME_HOUSING_TYPE VARCHAR(100),
+                DAYS_BIRTH INT,
+                DAYS_EMPLOYED INT,
+                OCCUPATION_TYPE VARCHAR(100),
+                AGE INT
+            );
+        """))
+        conn.commit()
+        print("   ✅ Bảng Clients — OK!")
 
         print("\n🎉 HOÀN TẤT KHỞI TẠO DATABASE TRÊN CLOUD!")
         print("Bây giờ anh đã có thể đẩy code lên GitHub và deploy.")
