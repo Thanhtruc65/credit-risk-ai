@@ -170,7 +170,7 @@
         } catch (err) {
             console.error("Dashboard error:", err);
             // Fallback content if SQL fails
-            document.querySelector('.glass').innerHTML += `<div style="color:var(--accent-rose); margin-top: 20px; text-align: center;">❌ Không thể tải dữ liệu từ CSDL. Đảm bảo cấu hình SQL Server hợp lệ (USE_SQL_DB=True)</div>`;
+            document.querySelector('.glass').innerHTML += `<div style="color:var(--accent-rose); margin-top: 20px; text-align: center;">❌ Lỗi: Không thể kết nối với Cơ sở dữ liệu. Vui lòng kiểm tra lại cấu hình kết nối (DATABASE_URL).</div>`;
         }
     }
     initDashboard();
