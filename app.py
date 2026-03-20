@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Request, Header
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,8 +13,6 @@ import bcrypt
 import uuid
 import random
 import smtplib
-import threading
-import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
@@ -519,19 +517,6 @@ def clear_all_history(request: Request):
 @app.get("/health")
 def health_check():
     return {"status": "ok", "model_loaded": model is not None}
-
-@app.post("/api/restart")
-async def restart(authorization: str = Header(None)):
-    RESTART_TOKEN = os.getenv("RESTART_TOKEN")
-    if not RESTART_TOKEN or authorization != f"Bearer {RESTART_TOKEN}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    
-    def shutdown():
-        time.sleep(2)
-        os._exit(0) # Thoát để file .bat tự bật lại
-    
-    threading.Thread(target=shutdown).start()
-    return {"status": "Restarting..."}
 
 @app.get("/api/feature_importance")
 def feature_importance():
