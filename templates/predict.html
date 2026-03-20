@@ -288,6 +288,11 @@
                     onclick="exportPDF()">
                     <i class="fas fa-file-pdf"></i> Tải Báo Cáo PDF
                 </button>
+
+                <button type="button" class="btn btn-ghost" id="resetBtn" style="display: none; margin-top: 10px; width: 100%; border-color: rgba(139, 92, 246, 0.3); color: var(--accent-purple);"
+                    onclick="resetForm()">
+                    <i class="fas fa-sync-alt"></i> Làm Mới hồ sơ & Dự đoán tiếp
+                </button>
             </div>
         </div>
     </div>
@@ -572,7 +577,10 @@
 
             const sg = document.getElementById('suggestSection');
             if (d.suggestions?.length > 0) { sg.style.display = 'block'; document.getElementById('suggestList').innerHTML = d.suggestions.map(s => `<div class="suggest-card">→ ${s}</div>`).join(''); } else sg.style.display = 'none';
-            document.getElementById('exportBtn').style.display = 'block'; loadFeatureImportance(); document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('exportBtn').style.display = 'block';
+            document.getElementById('resetBtn').style.display = 'block';
+            loadFeatureImportance();
+            document.getElementById('resultPanel').scrollIntoView({ behavior: 'smooth' });
         } catch (e) {
             alert("Lỗi kết nối mạng hoặc lỗi định dạng dữ liệu trả về từ server: " + e.message);
         }
@@ -584,6 +592,27 @@
     function toggleFI() { document.getElementById('fiPanel').classList.toggle('show'); }
     async function loadFeatureImportance() { try { const r = await fetch('/api/feature_importance'), d = await r.json(), c = document.getElementById('fiBars'), max = d.features[0]?.importance || 1; c.innerHTML = d.features.map(f => `<div class="bar-item"><span class="bar-name">${f.feature}</span><div class="bar-track"><div class="bar-fill" style="width:0" data-width="${(f.importance / max) * 100}%"></div></div><span class="bar-pct">${f.importance.toFixed(1)}%</span></div>`).join(''); setTimeout(() => c.querySelectorAll('.bar-fill').forEach(b => b.style.width = b.dataset.width), 100); } catch (e) { } }
 
+
+    function resetForm() {
+        // Reset Wizard
+        goToStep(1);
+        
+        // Reset Form Inputs
+        document.getElementById('loanForm').reset();
+        document.getElementById('SK_ID_CURR').value = '0';
+        document.getElementById('lookupId').value = '';
+        document.getElementById('lookupStatus').innerHTML = '';
+        
+        // Reset Results Panel
+        document.getElementById('noResult').style.display = 'flex';
+        document.getElementById('resultPanel').classList.remove('show');
+        document.getElementById('exportBtn').style.display = 'none';
+        document.getElementById('resetBtn').style.display = 'none';
+        if (document.getElementById('fiPanel')) document.getElementById('fiPanel').classList.remove('show');
+        
+        // Scroll to top of form
+        document.querySelector('.col-center').scrollIntoView({ behavior: 'smooth' });
+    }
 
     function exportPDF() {
         if (!lastResult || !lastResult.confidence) return alert("Vui lòng thực hiện dự đoán trước khi tải PDF.");

@@ -2071,7 +2071,52 @@
 
         // Global Chatbot Script
         function toggleChat() { 
-            document.getElementById('chatPanel').classList.toggle('open'); 
+            const panel = document.getElementById('chatPanel');
+            panel.classList.toggle('open'); 
+            if (panel.classList.contains('open')) {
+                updateChatPanelPosition();
+            }
+        }
+
+        // Tự động căn chỉnh vị trí Chat Panel dựa trên vị trí Bubble
+        function updateChatPanelPosition() {
+            const bubble = document.getElementById('chatBubble');
+            const panel = document.getElementById('chatPanel');
+            if (!bubble || !panel) return;
+
+            const bRect = bubble.getBoundingClientRect();
+            const pWidth = 400; // Chiều rộng mặc định từ CSS
+            const pHeight = 560; // Chiều cao mặc định từ CSS
+            const margin = 20;
+
+            // Tính toán vị trí ưu tiên: Bên trên và căn phải bằng với bubble
+            let pTop = bRect.top - pHeight - 15;
+            let pLeft = bRect.left - pWidth + bRect.width;
+
+            // Kiểm tra nếu vượt quá cạnh TRÊN -> Đẩy xuống dưới bubble
+            if (pTop < margin) {
+                pTop = bRect.bottom + 15;
+            }
+
+            // Kiểm tra nếu vẫn vượt quá cạnh DƯỚI -> Ép vào trong màn hình
+            if (pTop + pHeight > window.innerHeight - margin) {
+                pTop = window.innerHeight - pHeight - margin;
+            }
+
+            // Kiểm tra biên TRÁI
+            if (pLeft < margin) {
+                pLeft = margin;
+            }
+
+            // Kiểm tra biên PHẢI
+            if (pLeft + pWidth > window.innerWidth - margin) {
+                pLeft = window.innerWidth - pWidth - margin;
+            }
+
+            panel.style.top = pTop + 'px';
+            panel.style.left = pLeft + 'px';
+            panel.style.bottom = 'auto';
+            panel.style.right = 'auto';
         }
         function quickAsk(q) { document.getElementById('chatInput').value = q; sendChat(); }
         async function sendChat() {
@@ -2147,16 +2192,8 @@
                     chatBubble.style.left = `${x}px`;
                     chatBubble.style.top = `${y}px`;
                     
-                    // Also position the panel
-                    let panelY = y - chatPanel.offsetHeight - 15;
-                    if(panelY < 0) panelY = y + 60 + 15;
-                    let panelX = x - chatPanel.offsetWidth + 60;
-                    if(panelX < 0) panelX = x;
-                    
-                    chatPanel.style.right = 'auto';
-                    chatPanel.style.bottom = 'auto';
-                    chatPanel.style.top = `${panelY}px`;
-                    chatPanel.style.left = `${panelX}px`;
+                    // Position the panel correctly
+                    updateChatPanelPosition();
                 } catch(e) {}
             }
         }
@@ -2223,24 +2260,7 @@
             chatBubble.style.top = `${newY}px`;
             
             // Also move the chat panel relative to the new bubble position
-            // Keep it slightly above the bubble and align right if possible
-            chatPanel.style.right = 'auto';
-            chatPanel.style.bottom = 'auto';
-            
-            let panelNewY = newY - chatPanel.offsetHeight - 15;
-            // If panel goes above screen, push it below bubble instead
-            if(panelNewY < 0) {
-                panelNewY = newY + rect.height + 15;
-            }
-            
-            let panelNewX = newX - chatPanel.offsetWidth + rect.width;
-            // If panel goes off-left, align it to the left side of the bubble instead
-            if(panelNewX < 0) {
-                panelNewX = newX;
-            }
-            
-            chatPanel.style.top = `${panelNewY}px`;
-            chatPanel.style.left = `${panelNewX}px`;
+            updateChatPanelPosition();
         }
         
         function dragEnd() {
