@@ -1,8 +1,8 @@
 # 🚀 AI Loan Predictor - Hệ Thống Dự Đoán Vay Vốn Thông Minh
 > **Nền tảng phân tích tài chính và đánh giá rủi ro tín dụng ứng dụng Trí tuệ nhân tạo (Mô hình XGBoost & Gemini AI)**
 
-[![Status](https://img.shields.io/badge/Status-Online-brightgreen)](https://tr.xurtxinh.id.vn/)
-[![Demo](https://img.shields.io/badge/Demo-Live-blue)](https://tr.xurtxinh.id.vn/)
+[![Status](https://img.shields.io/badge/Status-Online-brightgreen)](https://huggingface.co/spaces/truc0605/credit-risk-ai-demo)
+[![Demo](https://img.shields.io/badge/Demo-Live-blue)](https://huggingface.co/spaces/truc0605/credit-risk-ai-demo)
 
 ---
 
