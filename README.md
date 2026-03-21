@@ -66,7 +66,7 @@ pip install -r requirements.txt
 python app.py
 ```
 👉 Truy cập ngay tại: **[https://tr.xurtxinh.id.vn/](https://tr.xurtxinh.id.vn/)**
-
+Do hệ thống demo hiện được triển khai trên nền tảng máy chủ miễn phí, nên trong một số thời điểm có thể xảy ra tình trạng không truy cập được hoặc phản hồi chậm.Nếu khong hiện kính mong thầy thử lại sau ạ!!
 ---
 
 ## ⚠️ Lưu ý quan trọng về Dữ liệu & Mô hình 
